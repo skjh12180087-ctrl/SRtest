@@ -7,761 +7,411 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
-body { font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; background: #f1f5f9; color: #1e293b; }
-.tata-navy { background-color: #002c5f; }
-.tata-blue { background-color: #0055b8; }
-.card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 44, 95, 0.1), 0 8px 10px -6px rgba(0, 44, 95, 0.1); }
-.swipe-card { transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s; will-change: transform, opacity; cursor: grab; }
-.swipe-card:active { cursor: grabbing; }
-@keyframes pulse-ring { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 0.4; } 100% { transform: scale(0.95); opacity: 0.8; } }
-.pulse-anim { animation: pulse-ring 2s infinite ease-in-out; }
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+html,body { height:100%; }
+body { height:100vh; height:100dvh; font-family:'Pretendard Variable',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; background:#f1f5f9; color:#1e293b; }
+.card-shadow { box-shadow:0 10px 25px -5px rgba(0,44,95,.1),0 8px 10px -6px rgba(0,44,95,.1); }
+.swipe-card { transition:transform .25s ease, opacity .2s; touch-action:pan-y; cursor:grab; user-select:none; }
+@keyframes pop { 0%{transform:scale(.8);opacity:0} 100%{transform:scale(1);opacity:1} }
+.pop { animation:pop .25s ease-out both; }
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
 </style>
 </head>
 <body class="h-full flex flex-col overflow-hidden text-slate-800">
 
-<!-- 상단 헤더 -->
-<header class="bg-white border-b border-slate-200 px-4 h-14 flex items-center justify-between shrink-0 shadow-sm z-30">
-  <div class="flex items-center space-x-3">
-    <div class="flex items-baseline space-x-1 font-extrabold text-lg sm:text-xl tracking-tight">
-      <span class="text-[#002c5f]">TATA</span>
-      <span class="text-[#0055b8]">DAEWOO</span>
-      <span class="text-xs font-semibold px-2 py-0.5 ml-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">SALES MASTER</span>
-    </div>
+<header class="bg-white border-b border-slate-200 px-3 sm:px-4 h-14 flex items-center justify-between shrink-0 shadow-sm z-30">
+  <div class="flex items-baseline gap-1 font-extrabold text-base sm:text-xl tracking-tight">
+    <span class="text-[#002c5f]">TATA</span><span class="text-[#0055b8]">DAEWOO</span>
+    <span class="text-[10px] sm:text-xs font-semibold px-2 py-0.5 ml-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">SALES MASTER</span>
   </div>
-  <div class="flex items-center space-x-3 text-xs">
-    <span class="hidden sm:inline-flex items-center text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
-      ⏰ 제한시간: <strong id="global-timer" class="text-blue-700 ml-1 font-mono">05:00</strong>
-    </span>
-    <span class="hidden md:inline text-slate-500 font-medium">👤 <span id="header-user">대리점 영업사원</span></span>
-    <button onclick="togglePanicMode()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded text-xs border border-slate-300 font-medium transition flex items-center gap-1">
-      <span>🚨 Panic Key</span> <kbd class="bg-white px-1 py-0.5 rounded text-[10px] border shadow-xs">Esc</kbd>
-    </button>
+  <div class="flex items-center gap-2 text-xs">
+    <span class="inline-flex items-center text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">⏰ <strong id="global-timer" class="text-blue-700 ml-1 font-mono">--:--</strong></span>
+    <span class="hidden md:inline text-slate-500">👤 <span id="header-user">-</span></span>
+    <button id="btn-sound" onclick="toggleSound()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded border border-slate-300">🔇</button>
+    <button onclick="togglePanicMode()" class="hidden lg:inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded border border-slate-300">🚨 Panic <kbd class="bg-white px-1 rounded text-[10px] border">Esc</kbd></button>
   </div>
 </header>
 
-<main class="flex-1 flex overflow-hidden relative">
-  <!-- 좌측 인트라넷 사이드바 (데스크톱) -->
-  <aside class="hidden md:flex flex-col items-center w-20 bg-white border-r border-slate-200 py-4 space-y-5 shrink-0 z-20">
-    <button onclick="sideNotice('전자결재')" class="flex flex-col items-center text-[11px] text-slate-600 hover:text-blue-700 transition">
-      <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg mb-1 shadow-xs">📝</div>
-      <span>전자결재</span>
-    </button>
-    <button onclick="sideNotice('차량견적')" class="flex flex-col items-center text-[11px] text-slate-600 hover:text-blue-700 transition">
-      <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg mb-1 shadow-xs">🚚</div>
-      <span>차량견적</span>
-    </button>
-    <button onclick="sideNotice('특장도면')" class="flex flex-col items-center text-[11px] text-slate-600 hover:text-blue-700 transition">
-      <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg mb-1 shadow-xs">📐</div>
-      <span>특장도면</span>
-    </button>
-    <button onclick="sideNotice('마스터혜택')" class="flex flex-col items-center text-[11px] text-slate-600 hover:text-blue-700 transition">
-      <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-lg mb-1 shadow-xs">👑</div>
-      <span>마스터혜택</span>
-    </button>
-  </aside>
+<main id="main-content" class="flex-1 overflow-y-auto p-3 sm:p-6 flex">
 
-  <!-- 메인 뷰 컨테이너 -->
-  <div class="flex-1 flex flex-col overflow-y-auto relative p-3 sm:p-6" id="main-content">
-    
-    <!-- 1. 인트로 & 대기실 화면 -->
-    <div id="view-intro" class="m-auto max-w-lg w-full bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 card-shadow space-y-6">
-      <div class="text-center space-y-2">
-        <div class="inline-flex px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-200">
-          🏆 2026 타타대우 세일즈 역량 평가전
-        </div>
-        <h1 class="text-2xl font-black text-slate-900 tracking-tight">세일즈 마스터 챌린지</h1>
-        <p class="text-xs text-slate-500 leading-relaxed">
-          맥쎈 · 구쎈 · 하이쎈 · 더쎈 · 노부스 전 라인업<br>
-          스피드 특장 매칭 & 실무 퀴즈(91문항 풀) 통합 역량 평가
-        </p>
-      </div>
-
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2 text-slate-600">
-        <div class="font-bold text-blue-800 flex items-center gap-1.5 text-[13px]">
-          <span>🎮</span> 진행 안내 (총 5분 소요)
-        </div>
-        <p>• <b>모듈 1 (특장 스와이프):</b> 까다로운 고객 요구사항에 맞는 차종을 직관적으로 스와이프 매칭 (5문제)</p>
-        <p>• <b>모듈 2 (실전 스피드 퀴즈):</b> 26MY 가격표, 신차 하이쎈, MC22 기술스펙, 10월 판매/인센티브 조건 타임어택</p>
-        <p>• <b>포상 연계:</b> 최종 점수에 따라 <b>골드/실버/브론즈 마스터</b> 등급 및 사전 물량 쿼터 혜택 부여</p>
-      </div>
-
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">영업사원 성명 / 소속 대리점</label>
-          <input type="text" id="sr-name" placeholder="예: 김영업 차장 / 호남중부대리점" maxlength="20"
-            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-600 focus:bg-white transition">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">퀴즈 풀 모드 선택</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="setQuizMode('speed')" id="btn-mode-speed" class="py-2.5 px-3 rounded-xl border text-xs font-bold border-blue-600 bg-blue-50 text-blue-700 transition">
-              ⚡ 스피드 챌린지 (15문항)
-            </button>
-            <button type="button" onclick="setQuizMode('full')" id="btn-mode-full" class="py-2.5 px-3 rounded-xl border text-xs font-medium border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition">
-              📚 마스터 완주 (전체 91문항)
-            </button>
-          </div>
-        </div>
-        <button onclick="startChallenge()" class="w-full bg-[#0055b8] hover:bg-[#004494] text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition transform active:scale-98">
-          🚀 챌린지 시작하기
-        </button>
-      </div>
-    </div>
-
-    <!-- 2. 모듈 1: 스피드 특장 매칭 (카드 스와이프) -->
-    <div id="view-module1" class="hidden m-auto max-w-md w-full flex flex-col items-center space-y-4">
-      <div class="w-full flex justify-between items-center px-1">
-        <div>
-          <span class="text-xs font-bold text-blue-700 uppercase tracking-wider">MODULE 1</span>
-          <h2 class="text-base font-extrabold text-slate-900">스피드 특장 고객 매칭</h2>
-        </div>
-        <div class="text-xs font-mono bg-blue-100 text-blue-800 font-bold px-2.5 py-1 rounded-full">
-          <span id="swipe-current">1</span> / <span id="swipe-total">5</span>
-        </div>
-      </div>
-
-      <!-- 카드 스와이프 영역 -->
-      <div class="relative w-full h-[370px] flex items-center justify-center select-none" id="swipe-container">
-        <!-- 동적 렌더링 카드 -->
-        <div id="card-element" class="swipe-card absolute inset-0 bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex flex-col justify-between">
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span id="card-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">고객 업종</span>
-              <span id="card-payload" class="text-xs font-bold text-slate-500">GVW 15.0T</span>
-            </div>
-            <h3 id="card-client" class="text-lg font-bold text-slate-900">도심 폐기물 수거업체 대표</h3>
-            <div id="card-dialogue" class="mt-3 p-3 bg-slate-50 rounded-xl text-xs text-slate-700 leading-relaxed border border-slate-100 italic">
-              "골목길이 좁아서 차 폭이랑 높이가 낮아야 하고, 턱에 걸려 챔버가 깨지지 않게 역방향 챔버가 공장 기본이어야 합니다."
-            </div>
-          </div>
-          <div class="space-y-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-            <div class="flex justify-between"><span>핵심 특장:</span> <strong id="card-spv" class="text-slate-800">압축진개 / 암롤</strong></div>
-            <div class="flex justify-between"><span>주요 요건:</span> <strong id="card-req" class="text-blue-700">도심 기동성 & 콤팩트 샤시</strong></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 빠른 선택 버튼들 (터치/클릭) -->
-      <div class="w-full space-y-2">
-        <p class="text-center text-[11px] text-slate-400">카드를 스와이프하거나 아래 최적 차종 버튼을 터치하세요</p>
-        <div class="grid grid-cols-5 gap-1.5">
-          <button onclick="handleManualChoice('HIXEN')" class="py-2.5 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-xs flex flex-col items-center">
-            <span>하이쎈</span>
-            <span class="text-[9px] font-normal text-teal-600">15T 특장</span>
-          </button>
-          <button onclick="handleManualChoice('KUXEN')" class="py-2.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold text-xs flex flex-col items-center">
-            <span>구쎈</span>
-            <span class="text-[9px] font-normal text-blue-600">고하중/윙</span>
-          </button>
-          <button onclick="handleManualChoice('MAXEN')" class="py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-bold text-xs flex flex-col items-center">
-            <span>맥쎈</span>
-            <span class="text-[9px] font-normal text-indigo-600">대형/트랙터</span>
-          </button>
-          <button onclick="handleManualChoice('DEXEN')" class="py-2.5 rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs flex flex-col items-center">
-            <span>더쎈</span>
-            <span class="text-[9px] font-normal text-sky-600">준중형</span>
-          </button>
-          <button onclick="handleManualChoice('NOVUS')" class="py-2.5 rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex flex-col items-center">
-            <span>노부스</span>
-            <span class="text-[9px] font-normal text-slate-600">실속/건설</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. 모듈 2: 실무 스피드 퀴즈 -->
-    <div id="view-module2" class="hidden m-auto max-w-lg w-full flex flex-col space-y-4">
-      <div class="flex justify-between items-center px-1">
-        <div>
-          <span class="text-xs font-bold text-blue-700 uppercase tracking-wider">MODULE 2</span>
-          <h2 class="text-base font-extrabold text-slate-900">실무 제품 & 판매조건 퀴즈</h2>
-        </div>
-        <div class="flex items-center space-x-2">
-          <span class="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">
-            문항: <b id="quiz-num">1</b> / <span id="quiz-total-display">15</span>
-          </span>
-          <span class="text-xs font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200 font-mono">
-            점수: <span id="quiz-score">0</span>점
-          </span>
-        </div>
-      </div>
-
-      <!-- 문제당 타임바 -->
-      <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-        <div id="question-timer-bar" class="bg-blue-600 h-full w-full transition-all duration-100 linear"></div>
-      </div>
-
-      <!-- 퀴즈 카드 -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 card-shadow space-y-4">
-        <div class="flex justify-between items-center">
-          <span id="quiz-category" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-            카테고리
-          </span>
-          <span id="quiz-streak" class="text-xs font-bold text-amber-600 hidden">🔥 3연속 정답!</span>
-        </div>
-        <h3 id="quiz-question" class="text-base font-bold text-slate-900 leading-snug">
-          문제가 렌더링됩니다.
-        </h3>
-
-        <!-- 보기 버튼 4개 -->
-        <div id="quiz-options" class="space-y-2 pt-2"></div>
-
-        <!-- 피드백 해설 박스 -->
-        <div id="quiz-feedback" class="hidden p-3.5 rounded-xl text-xs leading-relaxed transition"></div>
-      </div>
-    </div>
-
-    <!-- 4. 결과 및 세일즈 마스터 인증서 화면 -->
-    <div id="view-result" class="hidden m-auto max-w-lg w-full bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 card-shadow text-center space-y-6">
-      <div class="text-5xl" id="res-badge">🏆</div>
-      <div>
-        <div class="text-xs font-bold text-blue-700 uppercase tracking-widest">TATA DAEWOO SALES MASTER</div>
-        <h2 class="text-2xl font-black text-slate-900 mt-1" id="res-title">골드 마스터 인증</h2>
-        <p class="text-xs text-slate-500 mt-1" id="res-subtitle">수검자: 김영업 차장</p>
-      </div>
-
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-3">
-        <div class="grid grid-cols-3 gap-2 pb-3 border-b border-slate-200 font-medium">
-          <div><span class="text-slate-400">특장 매칭</span><br><b id="res-swipe-score" class="text-sm font-bold text-slate-800">5/5</b></div>
-          <div><span class="text-slate-400">실무 퀴즈</span><br><b id="res-quiz-score" class="text-sm font-bold text-slate-800">14/15</b></div>
-          <div><span class="text-slate-400">종합 점수</span><br><b id="res-total-score" class="text-sm font-bold text-blue-700">95점</b></div>
-        </div>
-        <div class="text-left text-slate-600 space-y-1">
-          <div class="font-bold text-slate-800">🎖️ 등급별 부여 혜택:</div>
-          <p id="res-benefit">• 2026 하이쎈·맥쎈 사전 예약 쿼터 우선 배정 권한 부여</p>
-          <p>• Certified Sales Master 명함 공식 엠블럼 및 판촉 패키지 지원</p>
-        </div>
-      </div>
-
-      <div class="space-y-2 pt-2">
-        <button onclick="downloadReport()" class="w-full bg-[#0055b8] hover:bg-[#004494] text-white font-bold py-3 rounded-xl text-sm transition shadow-sm">
-          📥 마스터 인증 성적표 다운로드 (TXT)
-        </button>
-        <button onclick="location.reload()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-xl text-xs transition">
-          🔄 다시 도전하기
-        </button>
-      </div>
-    </div>
-
+<!-- 인트로 -->
+<div id="view-intro" class="m-auto max-w-lg w-full bg-white border border-slate-200 rounded-2xl p-5 sm:p-8 card-shadow space-y-5">
+  <div class="text-center space-y-2">
+    <div class="inline-flex px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-200">🏆 2026 타타대우 세일즈 역량 평가전</div>
+    <h1 class="text-2xl font-black text-slate-900">세일즈 마스터 챌린지</h1>
+    <p class="text-xs text-slate-500 leading-relaxed">맥쎈 · 구쎈 · 하이쎈 · 더쎈 · 노부스 전 라인업<br>특장 매칭 + 실무 퀴즈 통합 역량 평가</p>
   </div>
-</main>
-
-<!-- PANIC KEY EXCEL 위장 화면 -->
-<div id="panic-overlay" class="fixed inset-0 bg-[#1e1e1e] z-50 hidden flex flex-col text-xs text-gray-300">
-  <div class="bg-[#2d2d2d] border-b border-gray-700 px-3 py-1.5 flex items-center justify-between">
-    <span class="font-bold text-gray-200">Microsoft Excel - TATA_DAEWOO_MOBILITY_Q4_Vehicle_Performance.xlsx [읽기 전용]</span>
-    <button onclick="togglePanicMode()" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-0.5 rounded text-[11px]">업무 복귀</button>
+  <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2 text-slate-600">
+    <div class="font-bold text-blue-800 text-[13px]">🎮 진행 안내</div>
+    <p>• <b>모듈 1 (특장 스와이프):</b> 고객 상황과 <b>추천 차종</b>이 나옵니다. 맞으면 <b>오른쪽(✅)</b>, 아니면 <b>왼쪽(❌)</b>으로 넘기세요.</p>
+    <p>• <b>모듈 2 (실전 퀴즈):</b> 제품 USP · 26MY 옵션/가격 · 판매조건. 빨리 맞힐수록, 연속으로 맞힐수록 점수가 커집니다. 5문항마다 <b>본부장 돌발 문제(점수 2배)</b>가 나옵니다.</p>
+    <p>• <b>라이프라인:</b> 50:50, 시간 +8초 (각 1회). 틀린 문제는 끝나고 <b>오답노트</b>로 복습할 수 있어요.</p>
   </div>
-  <div class="bg-[#f3f3f3] text-black border-b border-gray-300 px-2 py-1 flex space-x-4 text-[11px]">
-    <b>파일(F)</b><b>홈(H)</b><b>삽입(I)</b><b>데이터(D)</b><b>보기(W)</b>
-  </div>
-  <div class="bg-white text-black flex-1 p-4 overflow-auto">
-    <table class="w-full border-collapse border border-gray-300 text-xs">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-1.5">차종 라인업</th>
-          <th class="border p-1.5">권장소비자가(정지)</th>
-          <th class="border p-1.5">26MY 실판매가</th>
-          <th class="border p-1.5">재고할인(10월)</th>
-          <th class="border p-1.5">SR 프로모션</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td class="border p-1.5 font-bold">MAXEN 25.5T 덤프</td><td class="border p-1.5 text-right">₩234,480,000</td><td class="border p-1.5 text-right">₩203,480,000</td><td class="border p-1.5 text-right">3,100만</td><td class="border p-1.5 text-right">50만</td></tr>
-        <tr><td class="border p-1.5 font-bold">HIXEN 15T 카고</td><td class="border p-1.5 text-right">₩78,700,000</td><td class="border p-1.5 text-right">₩76,700,000</td><td class="border p-1.5 text-right">신차혜택</td><td class="border p-1.5 text-right">200만</td></tr>
-        <tr><td class="border p-1.5 font-bold">KUXEN 4.5T 카고</td><td class="border p-1.5 text-right">₩88,650,000</td><td class="border p-1.5 text-right">₩87,650,000</td><td class="border p-1.5 text-right">100만</td><td class="border p-1.5 text-right">50만</td></tr>
-        <tr><td class="border p-1.5 font-bold">DEXEN 4T 냉동탑차</td><td class="border p-1.5 text-right">₩93,050,000</td><td class="border p-1.5 text-right">₩91,050,000</td><td class="border p-1.5 text-right">MY25 800만</td><td class="border p-1.5 text-right">200만</td></tr>
-      </tbody>
-    </table>
+  <div class="space-y-4">
+    <div>
+      <label class="block text-xs font-bold text-slate-600 mb-1">영업사원 성명 / 소속 대리점</label>
+      <input type="text" id="sr-name" placeholder="예: 김영업 차장 / 호남중부대리점" maxlength="20" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-600 focus:bg-white">
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-600 mb-1">모드 선택</label>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="btn-mode-speed" onclick="setQuizMode('speed')" class="py-2.5 px-2 rounded-xl border text-xs font-bold">⚡ 스피드 챌린지</button>
+        <button id="btn-mode-full" onclick="setQuizMode('full')" class="py-2.5 px-2 rounded-xl border text-xs">📚 마스터 완주</button>
+      </div>
+      <p id="mode-desc" class="text-[11px] text-slate-400 mt-1.5"></p>
+    </div>
+    <button onclick="startChallenge()" class="w-full bg-[#0055b8] hover:bg-[#004494] text-white font-bold py-3.5 rounded-xl text-sm shadow-md">🚀 챌린지 시작하기</button>
   </div>
 </div>
 
-<!-- 알림 모달 -->
+<!-- 모듈 1 -->
+<div id="view-m1" class="hidden m-auto max-w-md w-full flex-col items-center space-y-3">
+  <div class="w-full flex justify-between items-center px-1">
+    <div><span class="text-xs font-bold text-blue-700">MODULE 1</span><h2 class="text-base font-extrabold">스피드 특장 매칭</h2></div>
+    <div class="text-xs font-mono bg-blue-100 text-blue-800 font-bold px-2.5 py-1 rounded-full"><span id="swipe-current">1</span> / <span id="swipe-total">5</span></div>
+  </div>
+  <div class="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-center text-sm">💬 추천 차종: <b id="card-proposal" class="text-lg text-amber-800">-</b> <span class="text-xs text-slate-500">— 이 고객에게 맞을까요?</span></div>
+  <div class="relative w-full">
+    <div id="card-element" class="swipe-card w-full bg-white border border-slate-200 rounded-2xl p-5 card-shadow space-y-3">
+      <div class="flex justify-between items-center">
+        <span id="card-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">-</span>
+        <span id="card-payload" class="text-xs font-bold text-slate-500">-</span>
+      </div>
+      <h3 id="card-client" class="text-lg font-bold text-slate-900">-</h3>
+      <div id="card-dialogue" class="p-3 bg-slate-50 rounded-xl text-xs text-slate-700 leading-relaxed border border-slate-100 italic">-</div>
+      <div class="space-y-1.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+        <div class="flex justify-between gap-3"><span class="shrink-0">핵심 특장</span><strong id="card-spv" class="text-slate-800 text-right">-</strong></div>
+        <div class="flex justify-between gap-3"><span class="shrink-0">주요 요건</span><strong id="card-req" class="text-blue-700 text-right">-</strong></div>
+      </div>
+    </div>
+  </div>
+  <div id="swipe-btns" class="w-full grid grid-cols-2 gap-3">
+    <button onclick="answerSwipe(false)" class="py-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 font-bold text-sm active:scale-95">❌ 아니다 (←)</button>
+    <button onclick="answerSwipe(true)" class="py-3.5 rounded-xl bg-green-50 border border-green-200 text-green-700 font-bold text-sm active:scale-95">✅ 맞다 (→)</button>
+  </div>
+  <div id="swipe-fb" class="hidden w-full p-4 rounded-xl text-xs leading-relaxed pop"></div>
+</div>
+
+<!-- 모듈 2 -->
+<div id="view-m2" class="hidden m-auto max-w-lg w-full flex-col space-y-3">
+  <div class="flex justify-between items-center px-1">
+    <div><span class="text-xs font-bold text-blue-700">MODULE 2</span><h2 class="text-base font-extrabold">실무 제품 & 판매조건 퀴즈</h2></div>
+    <div class="flex items-center gap-1.5 text-xs">
+      <span class="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600"><b id="quiz-num">1</b>/<span id="quiz-total-display">15</span></span>
+      <span class="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200 font-mono"><span id="quiz-score">0</span>점</span>
+    </div>
+  </div>
+  <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div id="question-timer-bar" class="bg-blue-600 h-full w-full"></div></div>
+  <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 card-shadow space-y-3">
+    <div class="flex justify-between items-center gap-2">
+      <span id="quiz-category" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">-</span>
+      <span id="quiz-badge" class="text-xs font-bold text-amber-600"></span>
+    </div>
+    <h3 id="quiz-question" class="text-base font-bold text-slate-900 leading-snug">-</h3>
+    <div id="quiz-options" class="space-y-2"></div>
+    <div class="flex gap-2 pt-1">
+      <button id="ll-half" onclick="useHalf()" class="flex-1 py-2 rounded-lg border border-slate-300 bg-slate-50 text-xs font-semibold disabled:opacity-40">🎯 50:50</button>
+      <button id="ll-time" onclick="useTime()" class="flex-1 py-2 rounded-lg border border-slate-300 bg-slate-50 text-xs font-semibold disabled:opacity-40">⏱️ 시간 +8초</button>
+    </div>
+    <div id="quiz-feedback" class="hidden p-3.5 rounded-xl text-xs leading-relaxed pop"></div>
+    <button id="quiz-next" onclick="nextQuestion()" class="hidden w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-sm">다음 문제 ▶</button>
+  </div>
+</div>
+
+<!-- 결과 -->
+<div id="view-result" class="hidden m-auto max-w-lg w-full bg-white border border-slate-200 rounded-2xl p-5 sm:p-8 card-shadow text-center space-y-5">
+  <div class="text-5xl" id="res-badge">🏆</div>
+  <div>
+    <div class="text-xs font-bold text-blue-700 tracking-widest">TATA DAEWOO SALES MASTER</div>
+    <h2 class="text-xl font-black text-slate-900 mt-1" id="res-title">-</h2>
+    <p class="text-xs text-slate-500 mt-1" id="res-subtitle">-</p>
+  </div>
+  <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs">
+    <div class="grid grid-cols-3 gap-2 font-medium">
+      <div><span class="text-slate-400">특장 매칭</span><br><b id="res-swipe-score" class="text-sm">-</b></div>
+      <div><span class="text-slate-400">실무 퀴즈</span><br><b id="res-quiz-score" class="text-sm">-</b></div>
+      <div><span class="text-slate-400">정확도</span><br><b id="res-total-score" class="text-sm text-blue-700">-</b></div>
+      <div><span class="text-slate-400">마스터 포인트</span><br><b id="res-points" class="text-sm">-</b></div>
+      <div><span class="text-slate-400">최고 콤보</span><br><b id="res-combo" class="text-sm">-</b></div>
+      <div><span class="text-slate-400">소요 시간</span><br><b id="res-time" class="text-sm">-</b></div>
+    </div>
+    <p class="text-[11px] text-slate-400 mt-3 text-left">※ 재미용 칭호입니다. 실제 혜택은 별도 안내에 따릅니다.</p>
+  </div>
+  <details id="wrong-note" class="text-left bg-red-50 border border-red-200 rounded-xl p-3 text-xs hidden">
+    <summary class="font-bold text-red-800 cursor-pointer">📒 오답노트 (<span id="wrong-count">0</span>문항)</summary>
+    <div id="wrong-list" class="mt-3 space-y-3"></div>
+  </details>
+  <div class="space-y-2">
+    <button id="btn-retry" onclick="retryWrong()" class="hidden w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-sm">🔁 틀린 문제만 다시 풀기</button>
+    <button onclick="downloadReport()" class="w-full bg-[#0055b8] hover:bg-[#004494] text-white font-bold py-3 rounded-xl text-sm">📥 성적표 다운로드 (TXT)</button>
+    <button onclick="location.reload()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-xl text-xs">🔄 다시 도전하기</button>
+  </div>
+  <p id="sync-status" class="text-[11px]"></p>
+</div>
+</main>
+
+<div id="panic-overlay" class="fixed inset-0 bg-[#1e1e1e] z-50 hidden flex flex-col text-xs text-gray-300">
+  <div class="bg-[#2d2d2d] border-b border-gray-700 px-3 py-1.5 flex items-center justify-between"><span class="font-bold text-gray-200">Microsoft Excel - Q4_Sales_Plan_vs_Actual.xlsx [읽기 전용]</span><button onclick="togglePanicMode()" class="bg-gray-700 text-white px-2 py-0.5 rounded text-[11px]">업무 복귀</button></div>
+  <div class="bg-[#f3f3f3] text-black border-b border-gray-300 px-2 py-1 flex gap-4 text-[11px]"><b>파일(F)</b><b>홈(H)</b><b>삽입(I)</b><b>데이터(D)</b></div>
+  <div class="bg-white text-black flex-1 p-4 overflow-auto"><table class="w-full border-collapse border border-gray-300"><thead><tr class="bg-gray-100"><th class="border p-1.5">차종</th><th class="border p-1.5">판매계획</th><th class="border p-1.5">실적</th><th class="border p-1.5">달성률</th></tr></thead><tbody>
+    <tr><td class="border p-1.5 font-bold">MAXEN</td><td class="border p-1.5 text-right">120</td><td class="border p-1.5 text-right">112</td><td class="border p-1.5 text-right">93.3%</td></tr>
+    <tr><td class="border p-1.5 font-bold">KUXEN</td><td class="border p-1.5 text-right">180</td><td class="border p-1.5 text-right">171</td><td class="border p-1.5 text-right">95.0%</td></tr>
+    <tr><td class="border p-1.5 font-bold">HIXEN</td><td class="border p-1.5 text-right">90</td><td class="border p-1.5 text-right">97</td><td class="border p-1.5 text-right">107.8%</td></tr>
+    <tr><td class="border p-1.5 font-bold">DEXEN</td><td class="border p-1.5 text-right">150</td><td class="border p-1.5 text-right">139</td><td class="border p-1.5 text-right">92.7%</td></tr></tbody></table></div>
+</div>
+
 <div id="modal-box" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl p-6 max-w-sm w-full card-shadow text-center space-y-3">
-    <h4 id="modal-title" class="text-sm font-bold text-slate-900">알림</h4>
+    <h4 id="modal-title" class="text-sm font-bold">알림</h4>
     <p id="modal-msg" class="text-xs text-slate-500 whitespace-pre-line leading-relaxed"></p>
     <button onclick="closeModal()" class="w-full bg-blue-600 text-white font-medium py-2.5 rounded-xl text-xs">확인</button>
   </div>
 </div>
 
 <script>
-// --- 음향 효과 합성기 (Web Audio API) ---
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playBeep(freq, type, duration) {
-  try {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type || 'sine';
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch(e) {}
-}
-const sfxCorrect = () => { playBeep(523, 'triangle', 0.1); setTimeout(() => playBeep(659, 'triangle', 0.15), 100); };
-const sfxWrong = () => { playBeep(220, 'sawtooth', 0.25); };
-const sfxSwipe = () => { playBeep(440, 'sine', 0.08); };
+/* ===== 설정 ===== */
+const SHEET_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';   // Apps Script 웹 앱 주소 (https://script.google.com/macros/s/.../exec)
+const SHEET_KEY = 'tata-sales-2026';                // Apps Script의 SECRET과 동일하게
+const SPEED_N = 15, SPEED_SEC = 360, Q_SEC = 15;
+const EXPIRES = [{ prefix: '10월', until: '2026-11-01T00:00:00+09:00' }];   // 월별 정책 문항 유효기간 (11월부터 자동 제외)
+const VEH = { HIXEN: '하이쎈', KUXEN: '구쎈', MAXEN: '맥쎈', DEXEN: '더쎈', NOVUS: '노부스' };
 
-// --- 전역 상태 및 데이터 ---
-let srName = "";
-let quizMode = "speed"; // "speed" (15문항) or "full" (91문항)
-let swipeIndex = 0;
-let swipeScore = 0;
-let quizIndex = 0;
-let quizScore = 0;
-let quizStreak = 0;
-let qTimer = null;
-let qTimeLeft = 15;
-let globalTimerSec = 300;
-let globalInterval = null;
-let activeQuizList = [];
+/* ===== 문항 데이터 ===== */
+const SWIPE_CARDS = /*__SWIPE__*/[];
+const POOL_RAW = /*__POOL__*/[];
+const POOL = POOL_RAW.filter(q => !EXPIRES.some(e => q.cat.startsWith(e.prefix) && Date.now() >= new Date(e.until).getTime()));
 
-// 모듈 1: 스피드 특장 매칭 카드 데이터
-const SWIPE_CARDS = [
-  {
-    badge: "도심 환경 특장",
-    payload: "GVW 15.0T / 무가변축",
-    client: "시/구청 위탁 폐기물 수거업체",
-    dialogue: '"골목길 진입이 잦아서 캡 높이와 폭이 좁아야 하고, 턱에 걸려 브레이크 챔버가 깨지지 않게 역방향 챔버가 필수입니다."',
-    spv: "압축/압착 진개차, 암롤, 살수차",
-    req: "도심 최적 기동성 & 콤팩트 샤시 (GVW 15톤)",
-    target: "HIXEN",
-    desc: "신차 하이쎈은 전폭 2,205mm / 전고 2,495mm의 콤팩트 캡과 역방향 챔버 기본 장착으로 도심 특장에 최적화되었습니다."
-  },
-  {
-    badge: "장거리 대량 수송",
-    payload: "고하중 17.5T / 가변축",
-    client: "전국 물류 지입차주",
-    dialogue: '"팔레트 16장 윙바디에 짐을 꽉 채우고 장거리 고속도로를 타야 하므로, 320마력 고출력 엔진과 넉넉한 슬리퍼캡 승차감이 중요합니다."',
-    spv: "상승 윙바디, 광폭 냉장탑",
-    req: "넉넉한 캐빈 실내 & 320마력 FPT 엔진",
-    target: "KUXEN",
-    desc: "구쎈(KUXEN)은 넓은 슬리퍼캡과 320마력 ED70/DL06 엔진, 강력한 프레임으로 윙바디 및 장거리 수송의 표준입니다."
-  },
-  {
-    badge: "고하중 건설 중기",
-    payload: "GVW 40T / 25.5톤",
-    client: "토사/골재 운송 차주",
-    dialogue: '"비포장 공사현장 험지를 드나들어야 해서 570마력급 엔진과 허브리덕션, 강력한 인타더 제동력이 꼭 필요합니다."',
-    spv: "25.5톤 덤프, 6x4 믹서트럭",
-    req: "Cursor 13 570ps 엔진 & 320mm 고강성 프레임",
-    target: "MAXEN",
-    desc: "맥쎈(MAXEN) 25.5톤 덤프는 570마력 FPT C13 엔진과 허브리덕션, 인타더 브레이크로 험지 건설 시장을 압도합니다."
-  },
-  {
-    badge: "도심 근거리 배송",
-    payload: "준중형 4.0T / 단거리",
-    client: "프랜차이즈 식자재 배송 차주",
-    dialogue: '"도심 골목 상권 납품용이라 기동성이 좋고 짐칸 바닥이 낮아야 하며, 하루 종일 서다 가다를 반복해 ZF 8단 풀오토가 필수입니다."',
-    spv: "냉장/냉동탑차, 3단 리프트",
-    req: "승하차 편의성 & ZF 8단 전자동 변속기",
-    target: "DEXEN",
-    desc: "더쎈(DEXEN)은 동급 유일 풀에어 브레이크와 ZF 8단 자동변속기로 도심 식자재 배송 기사님들의 피로도를 대폭 낮춥니다."
-  },
-  {
-    badge: "가성비 건설 장비",
-    payload: "15톤 덤프 / 6m³ 믹서",
-    client: "수도권 레미콘·건설 지입사",
-    dialogue: '"전자식 복잡한 사양보다는 고장 없이 튼튼하고, 가격 경쟁력이 가장 높은 경제적인 수송 섀시를 원합니다."',
-    spv: "15T 덤프, 6m³ 믹서",
-    req: "검증된 경제성과 내구성 & 합리적 구입가",
-    target: "NOVUS",
-    desc: "노부스(NOVUS)는 꼭 필요한 내구성 중심의 사양과 최강의 가격 경쟁력으로 실속파 건설 차주들의 확고한 지지를 받습니다."
-  }
-];
-
-// 모듈 2: 91개 전체 실무 퀴즈 데이터 풀
-const MASTER_QUIZ_POOL = [
-  // MC22 차량 소개 (30문항)
-  { cat: "MC22 파워트레인", q: "MC22로 변경되면서 신규 추가된 커민스(Cummins) ISB70 엔진의 최고출력과 최대토크는?", o: ["280ps / 102kgf·m", "315ps / 122kgf·m", "320ps / 112kgf·m", "360ps / 168kgf·m"], a: 1, exp: "커민스 ISB70 엔진은 315ps / 122kgf·m 스펙으로 고하중 중형 수송용에 신규 적용되었습니다." },
-  { cat: "MC22 파워트레인", q: "유로6 Step-D 적용에 따라 FPT Cursor 11 엔진의 라인업 변경 내역으로 올바른 것은?", o: ["420ps, 460ps, 480ps 전 라인업 유지", "420ps 및 460ps는 단종되고 480ps로 단일화", "480ps 엔진이 단종되고 460ps로 통일", "Cursor 11 전체가 단종되고 DX12로 대체"], a: 1, exp: "C11 엔진은 기존 420ps와 460ps가 단종되고 480ps(토크 234kgf·m로 5kgf·m 증대)로 집약되었습니다." },
-  { cat: "MC22 변속기", q: "ED70 320ps 엔진에서 ZF 수동변속기 기본 사양의 변경점으로 올바른 것은?", o: ["ZF 6단 수동 유지", "ZF 6단 수동 단종 및 ZF 9단 수동 기본화", "이튼 9단 수동 기본화", "ZF 16단 수동 기본화"], a: 1, exp: "ED70 320ps 모델은 상품성 강화를 위해 기존 ZF 6단 대신 ZF 9단 수동이 기본화되었습니다." },
-  { cat: "MC22 공기압/제동", q: "C-APU(기계식)와 E-APU(전자식)의 적용 차종 구분으로 올바른 것은?", o: ["전 차종 모두 E-APU 적용", "ABS 차종은 C-APU, EBS 차종(8x4, 10x4, 트랙터)은 E-APU 적용", "HCV는 C-APU, MCV는 E-APU 적용", "덤프만 E-APU, 카고는 C-APU 적용"], a: 1, exp: "ABS 적용 차종은 C-APU(10.8bar), EBS 차종은 E-APU(12.3bar)가 적용됩니다." },
-  { cat: "MC22 공기압/제동", q: "C-APU 및 E-APU 도입에 따른 샤시 에어건 기본 적용 위치로 올바른 것은?", o: ["캡 내부만 장착", "캡 내부 및 샤시 APU(LH) 포트 동시 적용", "샤시 후방 콤비램프 측면에만 장착", "조수석 공구함 내부에만 장착"], a: 1, exp: "실내뿐만 아니라 샤시 좌측(LH) APU 모듈에 샤시 에어건 포트가 적용되어 외부 작업성이 대폭 향상되었습니다." },
-  { cat: "MC22 편의사양", q: "독일 명품 ISRI(이스리) 운전석 시트의 적용 기준으로 올바른 것은?", o: ["노부스 및 프리마 전 차종 기본", "프리마 대형(HCV) 로얄 트림 기본 (중형급 엔진 제외)", "전 차종 유상 옵션으로만 선택 가능", "트랙터 모델에만 한정 적용"], a: 1, exp: "ISRI 시트는 프리마 대형 로얄 트림에 기본 적용되며, 중형급 엔진(ED70, DL06, ISB70)은 옵션 또는 명보 시트가 적용됩니다." },
-  { cat: "MC22 섀시/서스펜션", q: "프리마 전2축(8x4, 10x4) 카고 차량의 승차감 개선을 위한 축 위치 변경 사항은?", o: ["전 1축과 전 2축을 후방으로 150mm 이동", "전 1축과 전 2축을 전방으로 300mm 이동", "전 1축만 전방으로 100mm 이동", "축 위치 변경 없음"], a: 1, exp: "캡과 전축 서스펜션 위치를 가깝게 재설계하여 전 1축 및 2축을 전방으로 300mm 이동시켰습니다." },
-  { cat: "MC22 외관/정비성", q: "MC22 캡 틸팅(Cab Tilt) 작업 시 반드시 숙지해야 하는 정비 절차는?", o: ["도어를 먼저 개방한 후 틸팅", "캡 전면의 프론트 리드(Front Lid)를 먼저 오픈한 후 틸트 스위치 조작", "시동을 켠 상태에서만 조작 가능", "후방 에어 스포일러를 탈착 후 틸팅"], a: 1, exp: "틸트 스위치가 프론트 리드 내부로 이동하였으며 간섭 파손 방지를 위해 프론트 리드를 반드시 먼저 열어야 합니다." },
-  { cat: "MC22 적재함", q: "MC22 카고 모델의 공장 출고 기본 사양 변경점으로 올바른 것은?", o: ["완성차 기본 공급", "미완성차(샤시캡, ED3) 기본 공급으로 전환", "알루미늄 적재함 기본 장착", "나무 바닥 적재함 기본 장착"], a: 1, exp: "운영 효율성 제고를 위해 기존 완성차 기본 공급에서 미완성차(ED3) 기본 공급 체계로 변경되었습니다." },
-  { cat: "MC22 적재함", q: "MC22 카고 적재함 게이트 사양 중 완전히 공식 단종된 것은?", o: ["CSP 게이트", "스틸 게이트", "나무 바닥 + 나무 게이트 (EU6)", "알루미늄 게이트"], a: 2, exp: "기존 나무 바닥 + 나무 게이트(EU6)는 공식 단종되었으며 CSP 게이트(ES8) 위주로 운영됩니다." },
-  { cat: "MC22 편의사양", q: "스마트키(Smart Key) 시스템의 적용 범위는?", o: ["대형 로얄 트림에만 옵션", "트림 무관 프리마 전 차종 기본 적용", "노부스 및 프리마 전 차종 기본", "트랙터에만 한정 적용"], a: 1, exp: "스마트키 시스템(AU1)은 트림과 무관하게 프리마(맥쎈/구쎈) 전 차종에 기본 장착됩니다." },
-  { cat: "MC22 엔진오일 관리", q: "미터클러스터에서 엔진 오일량을 확인/경고하는 '오일 센더' 기능이 제외되는 엔진은?", o: ["FPT C11", "FPT ED70", "두산(DIC) 엔진 (DL06, DX12)", "FPT C13"], a: 2, exp: "오일 레벨 센더 기능은 FPT 엔진에 적용되며, 두산 엔진(DL06, DX12)에는 미적용됩니다." },
-  { cat: "MC22 계기판", q: "계기판(미터클러스터)의 MC22 기본 및 옵션 운영 사양으로 올바른 것은?", o: ["모노크롬 기본, 7인치 컬러 옵션", "풀 컬러(7인치) 전 차종 기본화, 12인치 풀 디지털 클러스터 대형 옵션", "전 차종 12인치 풀 디지털 기본", "노부스만 풀 디지털 기본"], a: 1, exp: "모노크롬이 삭제되고 7인치 풀 컬러가 전 차종 기본화되었으며, 12인치 풀 디지털은 옵션(MK3)입니다." },
-  { cat: "MC22 주행성능", q: "프리마의 직진 주행 안정성 향상을 위해 조정한 캐스터(Caster) 각과 킹핀(Kingpin) 각도는?", o: ["캐스터: 2° → 0°, 킹핀: 6.5° → 7.5°", "캐스터: 0° → 2°, 킹핀: 7.5° → 6.5°", "캐스터: 5° → 10°, 킹핀: 0° → 5°", "각도 변경 없이 기어비만 조정"], a: 1, exp: "직진성 향상을 위해 캐스터 각을 0°에서 2°로 올리고, 킹핀 각을 7.5°에서 6.5°로 조정했습니다." },
-  { cat: "MC22 특장/건설", q: "세륜장 통과 시 흡기 오염을 방지하고 크레인 특장 레이아웃을 위해 적용된 에어클리너는?", o: ["라디에이터 일체형 에어클리너", "샤시 하부 밀폐형 에어클리너", "덕트 일체형 캡 후방 에어클리너 (CE3)", "오일 배스 에어클리너"], a: 2, exp: "덕트 일체형 에어클리너(CE3)를 캡 뒤편에 컴팩트하게 배치하여 세륜장 통과 시 오염을 방지하고 공간을 확보했습니다." },
-  { cat: "MC22 안전장치", q: "초음파 센서로 후방 장애물을 감지하는 '주차 보조 시스템(PAS, PC1)'의 옵션 제약 조건은?", o: ["트랙터 전 차종만 선택 가능", "공장 출고 시 카고 적재함(데크)이 장착된 차종에만 적용 가능", "미완성차(샤시캡)에만 적용 가능", "알루미늄 휠 선택 시에만 가능"], a: 1, exp: "초음파 센서가 적재함 하단에 취부되므로 공장에서 적재함이 장착 출고되는 카고에만 선택 가능합니다." },
-  { cat: "MC22 안전장치", q: "타이어 공기압 모니터링 시스템(TPMS, TPM)의 옵션 선택 필수 전제 조건은?", o: ["스틸 휠 기본 사양에만 적용 가능", "알룩스(Alux) 알루미늄 휠 선택 시에만 적용 가능", "ZF 자동변속기 선택 시에만 가능", "10x4 대형 카고에만 가능"], a: 1, exp: "TPMS 센서 장착 구조상 알룩스 알루미늄 휠 장착 차량에만 옵션 적용이 가능합니다." },
-  { cat: "MC22 내구성/방청", q: "MC22 프레임의 부식 및 변색 방지를 위해 새롭게 업그레이드된 도장 공법은?", o: ["우레탄 단독 도장", "전착 도장(ED) 위에 블랙 반광 분체 도장(Powder Coating) 추가 적용", "아연 도금 강판 무도장 출고", "에폭시 하도 단독 도장"], a: 1, exp: "기존 ED 코팅 위에 두께 80±10μm 블랙 반광 분체 도장을 전 차종 기본 적용하여 염수분무 720시간을 통과했습니다." },
-  { cat: "MC22 섀시/서스펜션", q: "선회 시 스프링 판간 마찰음과 '뚝' 이음을 방지하기 위해 확대 적용된 부품은?", o: ["테프론 와셔", "스프링 나사부시(Threaded Bush) 및 판간 사일런서", "황동 볼트", "우레탄 범퍼 스토퍼"], a: 1, exp: "스프링 유격을 줄이기 위해 나사부시를 확대 적용하고 전축 리프 스프링 사이에 사일런서를 추가했습니다." },
-  { cat: "MC22 도어 편의성", q: "강풍 시 도어 젖힘을 방지하기 위해 개선된 도어 체크암의 스펙 변경점은?", o: ["1단 걸림 / 작동력 15Nm", "2단 걸림 유지 / 작동력 25Nm", "3단 걸림 / 코일스프링 적용 / 작동력 50Nm", "유압식 도어 클로저 적용"], a: 2, exp: "도어 체크 위치를 2단에서 3단으로 늘리고 코일스프링을 채택해 작동력을 25Nm에서 50Nm로 강화했습니다." },
-  { cat: "MC22 특장/건설", q: "험지를 운행하는 6x4 덤프 및 믹서 트럭의 지상고 개선 1단계 적용 수치는?", o: ["전축 +10mm, 후축 +5mm", "전축 +30mm, 후축 +20mm", "전축 +50mm, 후축 +50mm", "전/후축 변동 없음"], a: 1, exp: "범퍼 하부 간섭 방지를 위해 전축 +30mm, 후축 +20mm의 지상고 상향이 반영되었습니다." },
-  { cat: "MC22 외관/공력", q: "루프 에어 스포일러(EA4) 신규 개발 사양이 적용되는 캡 타입은?", o: ["로우돔(Low Dome) 캡 전용", "하이돔(High Dome) 캡 전용", "데이(Day) 캡 전용", "전 캡 공용"], a: 1, exp: "신규 루프 스포일러(EA4)는 수요가 높은 하이돔 캡에만 신규 개발 적용되었습니다." },
-  { cat: "MC22 커넥티드카", q: "타타대우 커넥티드카 서비스 '엑스링크(X-Link)'의 무상 제공 기간은?", o: ["1년", "3년", "5년", "평생 무상"], a: 2, exp: "엑스링크(X-Link) 장착 차량은 개통 후 5년간 통신비가 무상 지원됩니다." },
-  { cat: "MC22 커넥티드카", q: "경쟁사 대비 타타대우 엑스링크(X-Link)만의 차별화된 특화 기능은?", o: ["원격 시동 및 공조 제어", "한국교통안전공단 DTG 운행기록 자동 전송 기능", "스마트폰 목적지 전송", "원격 문 열림/잠김"], a: 1, exp: "엑스링크 단말기는 DTG 일체형으로 한국교통안전공단에 운행기록이 자동 전송되는 강점이 있습니다." },
-  { cat: "MC22 편의사양", q: "대시보드 조수석 측 더미 커버를 삭제하고 새롭게 기본 추가된 전원 포트는?", o: ["5V USB-C 포트", "12V 전원 소켓", "220V 인버터 콘센트", "무선 충전 패드"], a: 1, exp: "조수석 부위 승객 및 기기 활용을 위해 대시보드 조수석 측에 12V 소켓을 기본 추가했습니다." },
-  { cat: "MC22 안전장치", q: "제동 시스템 고장 시를 대비하여 안전성을 강화한 브레이크 페달 스위치 사양은?", o: ["단일 무접점 홀센서", "듀얼 브레이크 스위치 (접점 2개 이중화 구성)", "기계식 와이어 백업 시스템", "풋 브레이크 비상 밸브"], a: 1, exp: "제동 신호 오류를 방지하기 위해 접점이 2개인 듀얼 브레이크 스위치를 전 차종 기본화했습니다." },
-  { cat: "MC22 파워트레인", q: "유로6 Step-D FPT Cursor 13 엔진의 마력 향상 수치는?", o: ["560ps 유지", "560ps에서 570ps로 10ps 향상", "560ps에서 580ps로 20ps 향상", "600ps로 대폭 상향"], a: 1, exp: "Cursor 13 엔진은 Step-D 전환 시 최고출력이 560ps에서 570ps로 10ps 상향되었습니다." },
-  { cat: "MC22 섀시/서스펜션", q: "프리마 대형 9.1m 카고 모델에 신규 적용된 후륜 서스펜션 타입은?", o: ["4-백 에어서스펜션 + 디스크 브레이크", "2-백(2-Bag) 에어서스펜션 + 드럼 브레이크 (SA1)", "멀티 리프 스프링", "유압식 하이드로펜션"], a: 1, exp: "적재물 보호와 실속형 구성을 위해 2-Bag 에어서스펜션 + 드럼 브레이크 사양(SA1)이 적용되었습니다." },
-  { cat: "MC22 안전장치", q: "측면 안전 강화를 위해 프리마 대형 카고에 확대 적용된 알루미늄 사이드 프로텍터의 높이는?", o: ["80mm", "105mm", "150mm", "200mm"], a: 2, exp: "기존 105mm 사양에서 대형 모델 전반에 150mm 알루미늄 프로텍터가 기본화되었습니다." },
-  { cat: "MC22 브랜드/네이밍", q: "기존 프리마(PRIMA) 모델을 대체하여 대형과 중형 트럭에 부여된 공식 브랜드명은?", o: ["더쎈(DEXEN) & 메가(MEGA)", "맥쎈(MAXEN) & 구쎈(KUXEN)", "노부스 프로 & 프리마 마스터", "엑시언트 & 파비스"], a: 1, exp: "프리마 풀체인지급 개편을 통해 대형 '맥쎈(MAXEN)', 중형 '구쎈(KUXEN)'으로 론칭되었습니다." },
-
-  // 하이쎈(HIXEN) USP (15문항)
-  { cat: "하이쎈 전략", q: "타타대우 중형(MCV) 시장 공략을 위한 '투트랙(2-Track) 전략'의 포지셔닝은?", o: ["고하중은 하이쎈, 일반하중은 구쎈", "고하중(17.5T)은 구쎈·맥쎈, 일반하중(15.5T) 무가변축 특장은 하이쎈 담당", "자가용은 구쎈, 가변축은 하이쎈", "환경차는 맥쎈, 카고는 하이쎈"], a: 1, exp: "고하중 장거리 시장은 구쎈/맥쎈이, 일반하중(15.5T) 단축 특장 시장은 신차 하이쎈이 담당합니다." },
-  { cat: "하이쎈 차체/기동성", q: "하이쎈(DEXEN 15톤)이 현대 파비스 대비 도심 좁은 길에서 유리한 핵심 치수는?", o: ["파비스보다 전고와 캡 폭이 훨씬 넓고 높음", "캡 전폭 2,205mm, 전고 2,495mm로 파비스 대비 좁고 낮음", "휠베이스가 대형트럭 수준으로 김", "최저 지상고가 대형 덤프 수준으로 높음"], a: 1, exp: "하이쎈은 전폭 2,205mm, 전고 2,495mm로 파비스(2,320mm / 2,610~2,795mm) 대비 좁고 낮아 기동성이 우수합니다." },
-  { cat: "하이쎈 중량/GVW", q: "하이쎈(DEXEN 15톤)의 차량 총중량(GVW) 기본 스펙 및 타이어 옵션 시 최대치는?", o: ["기본 13.0톤 (옵션 14.0톤)", "기본 15.0톤 (285 타이어 옵션 적용 시 15.5톤)", "기본 16.0톤 단일 사양", "기본 15.5톤 (옵션 17.5톤)"], a: 1, exp: "기본 245 타이어 시 GVW 15.0톤이며, 285 타이어 옵션 적용 시 15.5톤까지 증대됩니다." },
-  { cat: "하이쎈 파워트레인", q: "하이쎈(DEXEN 15톤)에 반영된 파워트레인 엔진 출력과 토크 스펙은?", o: ["DX05 엔진 : 235~240마력 / 90kgf·m", "ED70 엔진 : 280마력 / 102kgf·m", "ISB70 엔진 : 315마력 / 122kgf·m", "DL06 엔진 : 280마력 / 95kgf·m"], a: 0, exp: "하이쎈에는 DX05 240ps/90kgf·m 및 F4.5 235ps 엔진이 탑재됩니다." },
-  { cat: "하이쎈 변속기", q: "하이쎈(DEXEN 15톤)에 적용되는 자동변속기(AT) 선택 사양 구성은?", o: ["ZF 6단 자동화 단일 사양", "ZF 8단 전자동 변속기 및 앨리슨 9단 전자동 변속기", "다이모스 6단 수동 전용", "ZF 12단 TraXon 전용"], a: 1, exp: "하이쎈은 주행 연비의 ZF 8단 AT와 특장 호환성이 우수한 앨리슨 9단 AT가 적용됩니다." },
-  { cat: "하이쎈 특장 편의성", q: "청소차/덤프 특장 시 턱에 걸려 파손되는 것을 방지하기 위해 공장 기본 적용된 브레이크 챔버는?", o: ["전방 돌출형 챔버", "역방향(Reverse-direction) 리어 챔버", "디스크 내장형 일체 챔버", "탈착식 와이어 챔버"], a: 1, exp: "특장 작업 중 장애물 파손을 막기 위해 공장 생산 단계부터 리어 브레이크 챔버가 역방향으로 장착됩니다." },
-  { cat: "하이쎈 샤시 레이아웃", q: "하이쎈이 특장 가대 공간을 확보하기 위해 채택한 콤팩트 샤시 레이아웃은?", o: ["에어탱크를 조수석 캐빈 내부로 이동", "배터리와 에어탱크를 하나로 통합한 '에어탱크 일체형 배터리'", "연료탱크 용량을 50L로 축소", "배터리를 프레임 후방 끝으로 이동"], a: 1, exp: "특장 상부 공간 확보를 위해 배터리와 에어탱크를 일체형으로 통합 배치했습니다." },
-  { cat: "하이쎈 특장 호환성", q: "냉동/냉장 탑차 특장 고객을 위해 하이쎈 엔진룸에 기본 마련된 구조는?", o: ["대형 인버터 2구 기본 제공", "냉동기용 트윈 콤프레셔(2 Compressors) 및 풀리 추가 장착 공간", "루프 에어컨 배관 사전 매립", "적재함 바닥 냉각수 파이프"], a: 1, exp: "냉동탑차 특장을 위해 차량용 콤프 외에 냉동기 전용 콤프를 추가할 수 있는 트윈 콤프 공간을 확보했습니다." },
-  { cat: "하이쎈 승하차 편의", q: "잦은 승하차가 필요한 환경미화원이나 배송 기사를 위한 하이쎈의 1단 발판 높이는?", o: ["약 550mm", "약 410mm 수준의 낮은 1단 풋스텝", "약 300mm 전동 스텝", "높이 조절 불가"], a: 1, exp: "캐빈 높이가 낮아 지상에서 1단 발판까지의 높이가 약 410mm 수준으로 승하차가 매우 편리합니다." },
-  { cat: "하이쎈 승차감", q: "기존 중형 트럭의 풀 플로팅 승차감에 익숙한 고객을 위해 하이쎈에 적용된 캡 서스펜션은?", o: ["러버 부싱 단독 고정형", "코일 스프링 + 쇼크업소버(Shock Absorber) 캡 서스펜션", "전자제어 풀 에어 서스펜션", "판스프링 직결 고정형"], a: 1, exp: "준중형 캡의 딱딱함을 보완하기 위해 코일 스프링과 쇼바가 결합된 플로팅 캡 서스펜션을 적용했습니다." },
-  { cat: "하이쎈 프레임", q: "하이쎈(DEXEN 15톤) 프레임의 단면 구조 타입과 크레인 특장용 보강 사양은?", o: ["오프셋 프레임 + 카본 파이버", "스트레이트(850mm) 프레임 + 6~7t 증대 및 부분 5T 더블 채널 보강", "테이퍼 프레임 단독", "무보강 알루미늄 프레임"], a: 1, exp: "특장에 유리한 850mm 스트레이트 프레임에 6~7t 두께 증대 및 부분 5T 더블 채널 보강 구조를 채택했습니다." },
-  { cat: "하이쎈 시장 타겟", q: "MCV 일반하중(15.5톤) 시장에서 가변축을 장착하지 않는 단축 차량의 비중과 주요 업종은?", o: ["전체의 20%, 대부분 윙바디", "전체의 약 70%를 차지하며 청소차·살수차·탱크로리 등 특장(SPV) 비중이 67%", "전체의 90%, 대부분 자가용 카고", "전체의 10%에 불과한 틈새시장"], a: 1, exp: "일반하중 시장의 약 70%는 단축 차량이며, 이 중 67% 이상이 환경차, 탱크로리 등 고유 특장 시장입니다." },
-  { cat: "하이쎈 브랜드 비교", q: "구쎈(KUXEN)과 하이쎈(HIXEN)의 포지셔닝 차이를 가장 정확히 비교한 것은?", o: ["구쎈은 소형 엔진, 하이쎈은 대형 11리터 엔진", "구쎈은 넓은 캐빈과 고마력으로 가변축/윙바디에, 하이쎈은 콤팩트 캡과 가성비로 도심 단축 특장에 특화", "구쎈은 덤프 전용, 하이쎈은 카고 전용", "구쎈은 수동만, 하이쎈은 자동만 존재"], a: 1, exp: "구쎈은 장거리 고하중 윙바디에, 하이쎈은 도심 환경차 및 단축 특장에 최적화되어 있습니다." },
-  { cat: "하이쎈 제동시스템", q: "하이쎈(DEXEN 15톤)의 기본 제동 시스템 방식은?", o: ["유압식 디스크 브레이크", "풀에어 브레이크(FAB) & 드럼(Drum) 브레이크", "공유압 복합식(AOH) 브레이크", "회생제동 전용 브레이크"], a: 1, exp: "강력한 제동력과 유지보수 경제성을 위해 풀에어 브레이크(FAB) 및 드럼 방식을 기본 채택했습니다." },
-  { cat: "하이쎈 커넥티드카", q: "하이쎈(DEXEN 15톤)에 적용되는 타타대우 전용 커넥티드카 서비스 명칭은?", o: ["블루링크 (BlueLink)", "쎈링크 (XEN Link / X-Link)", "유보 (UVO)", "다이나플릿 (Dynafleet)"], a: 1, exp: "타타대우 전 차종의 공식 커넥티드카 서비스 명칭은 '쎈링크(XEN-LINK)'입니다." },
-
-  // 26MY 가격표 & 옵션 (40문항 중 핵심 및 대표 문항)
-  { cat: "26MY 캡 옵션", q: "맥쎈 카고 10x4 및 JL8LM 모델 슬리퍼캡의 기본 리어글라스 유무 및 캡 옵션 코드는?", o: ["리어글라스 있음 (CSF)", "리어글라스 없음 (CS5, 슬리퍼 표준캡 기본)", "하이돔 (CSH)", "저상 리어글라스 있음 (CSL)"], a: 1, exp: "10x4 카고 및 JL8LM은 슬리퍼 표준캡에 리어글라스 없는 사양(CS5)이 기본 출고됩니다." },
-  { cat: "26MY 트랙터 캡", q: "맥쎈 대형 트랙터(Tractor)의 공장 출고 기본 캡 높이는?", o: ["슬리퍼 저상캡 (CSF)", "슬리퍼 표준캡 (CSP/CSS)", "슬리퍼 하이돔 (CSH)", "데이캡 저상 (CEF)"], a: 1, exp: "트랙터는 슬리퍼 표준캡이 기본이며 슬리퍼 저상캡은 무상 선택 가능합니다." },
-  { cat: "26MY 변속기 PTO", q: "트랙손(TraXon) ZF 12단 자동화변속기에 D_PTO(드라이브샤프트 PTO) 적용 시 필수 선택 코드는?", o: ["[V67]", "[V72]", "[MT6]", "[V74]"], a: 2, exp: "TraXon 변속기에서 D_PTO 적용 시 반드시 [MT6] 옵션을 선택해야 합니다." },
-  { cat: "26MY 특장 레이아웃", q: "MCV 구쎈 일반하중 DL06 미완성차 음식물쓰레기수거차 제작 시 필수 샤시 레이아웃 옵션은?", o: ["[LY1]", "[LY2]", "[LY3]", "[SPS]"], a: 0, exp: "음식물쓰레기수거차 제작 시 덕트 일체형 에어크리너와 통합배터리가 포함된 [LY1]이 필수입니다." },
-  { cat: "26MY 특장 레이아웃", q: "콘크리트 펌프트럭(CPT)용으로 ATS 및 배기파이프를 90mm 상향시키는 옵션 코드는?", o: ["[LY1]", "[LY2]", "[SPS]", "[LY8]"], a: 2, exp: "CPT용으로 배기파이프를 90mm 올리는 옵션 코드는 [SPS]입니다." },
-  { cat: "26MY 맥쎈 연료탱크", q: "맥쎈 4x2 극초장축+ 9.1m 모델(JH8C8)에 기본 적용되는 알루미늄 연료탱크 용량은?", o: ["200L", "300L", "400L (FT4)", "500L"], a: 2, exp: "맥쎈 4x2 9.1m 모델에는 400L 알루미늄 연료탱크[FT4]가 기본 장착됩니다." },
-  { cat: "26MY 시트 옵션", q: "맥쎈 대형 카고/트랙터에서 26MY 변경 사항으로 기존 기본에서 '옵션화'된 품목은?", o: ["7인치 클러스터", "독일 ISRI 시트 [AK9] (옵션가 1,500천원)", "샤시 에어건", "스마트키"], a: 1, exp: "ISRI 시트[AK9]가 26MY부터 로얄 트림에서도 옵션 사양(1,500천원)으로 전환되었습니다." },
-  { cat: "26MY 옵션 계산", q: "맥쎈에서 '전자석식 리타더[JD6/TP1]'와 '무시동 에어컨[C80/TP1]' 동시 선택 시 견적 계산법은?", o: ["단순 합산", "두 옵션가 합에서 -520천원 차감 ([TP1] 배터리 중복 공제)", "무시동 에어컨 50% 할인", "동시 장착 불가"], a: 1, exp: "고용량 배터리[TP1]가 중복되므로 두 옵션가 합에서 520천원을 차감해야 합니다." },
-  { cat: "26MY 적재중량", q: "맥쎈 6x4 저상 카고 ED70 엔진에서 '12.5톤 적재중량[VW5]' 선택 시 추가 비용은?", o: ["무상", "300천원", "500천원", "1,000천원"], a: 2, exp: "6x4 저상 ED70 모델에서 12.5톤 적재중량 선택 시 500천원이 추가됩니다." },
-  { cat: "26MY 맥쎈 6x4 카고", q: "맥쎈 6x4 카고 DX12(440마력) 모델에 적용되는 기본 수동 및 자동변속기 조합은?", o: ["ZF 16단 / ZF 12단", "이튼 9단 수동(MH5) / ZF 12단 자동(MH6)", "ZF 9단 / ZF 8단", "다이모스 6단 / 앨리슨 6단"], a: 1, exp: "DX12 엔진에는 이튼 9단 수동(MH5)과 ZF 12단 자동(MH6)이 적용됩니다." },
-  { cat: "26MY 10x4 카고", q: "맥쎈 10x4 카고 모델에서 ZF 12단 자동화변속기 선택 시 강제 포함되는 옵션은?", o: ["인타더 브레이크", "프리비전 [PV1] (800천원 포함)", "전자석식 리타더", "EHPS 조향장치"], a: 1, exp: "10x4 카고는 프리비전[PV1]이 강제 옵션으로 변속기 가격에 포함되어 있습니다." },
-  { cat: "26MY 대형 카고 편의", q: "맥쎈 8x4 및 10x4 카고 슬리퍼캡 로얄 트림에 기본화(2,120천원 반영)된 편의 사양은?", o: ["ISRI 시트", "무시동 에어컨(C80) & 고용량 배터리(TP1)", "하이돔 썬루프", "냉장고"], a: 1, exp: "8x4, 10x4 로얄 슬리퍼캡에는 무시동 에어컨 및 고용량 배터리가 기본화되었습니다." },
-  { cat: "26MY 덤프 미완성차", q: "맥쎈 25.5톤 덤프(LR7DZ, 570ps) 미완성차 주문 시 가격 감액과 필수 법규 옵션은?", o: ["-500만원 / ESC 필수", "-1,000만원 / [JG1] AEB&ACC 및 [WS1] LDWS 적용 필수", "가격 동일 / TPMS 필수", "-2,000만원 / 샤시 에어혼 필수"], a: 1, exp: "25.5톤 덤프 미완성차는 완성차 대비 1,000만원 감액되며 AEB/ACC, LDWS 장착이 필수입니다." },
-  { cat: "26MY 노부스 덤프/믹서", q: "노부스 대형 15톤 덤프와 6m³ 믹서의 기본 장착 휠 차이는?", o: ["둘 다 알루미늄휠", "15톤 덤프는 스틸휠, 6m³ 믹서는 고광택 알루미늄휠 기본", "덤프는 알루미늄, 믹서는 스틸", "둘 다 스틸휠"], a: 1, exp: "노부스 15톤 덤프는 스틸휠 기본, 6m³ 믹서는 고광택 알루미늄휠이 기본입니다." },
-  { cat: "26MY 구쎈 대형캡", q: "중형 구쎈 라인업 중 대형 맥쎈(MAXEN) 캡이 적용되는 모델은?", o: ["구쎈 4.5톤 초장축", "구쎈 극초장축플러스 8.8m (JH8K8) 및 8.8m 고하중 (JH8H8)", "구쎈 6x2 사료차", "구쎈 4x4 AWD"], a: 1, exp: "극초장축플러스 8.8m 모델은 대형 맥쎈 캡과 320mm 대형 프레임이 적용됩니다." },
-  { cat: "26MY 구쎈 변속기 옵션", q: "구쎈 수퍼디럭스(SDX) 트림에서 ZF 8단 자동변속기(MB5) 선택 시 유의사항은?", o: ["알루미늄 휠 자동 차감", "운전석 열선시트[AH7] 150천원이 강제 선택되어 변속기 가격에 포함 (3,650천원)", "스마트키 무상 제공", "에어서스펜션 취소"], a: 1, exp: "ZF 8단 AT 선택 시 운전석 열선 시트[AH7] 150천원이 강제 선택되어 옵션가에 포함됩니다." },
-  { cat: "26MY 구쎈 특장 트림", q: "구쎈 공장 출고 OEM 특장차 중 '음식물쓰레기수거차(CFW)'의 주문 가능 트림은?", o: ["로얄 트림 전용", "수퍼디럭스(SDX) 트림 전용 (로얄 미운영)", "트림 무관 선택 가능", "프리미어 트림"], a: 1, exp: "음식물쓰레기수거차는 로얄 트림이 없으므로 반드시 수퍼디럭스 트림으로 계약해야 합니다." },
-  { cat: "26MY 더쎈 브레이크", q: "더쎈(DEXEN) 전 차종에 기본 적용되는 제동 시스템 방식은?", o: ["유압식 디스크 브레이크", "공유압 복합식(AOH) 브레이크", "풀에어 드럼 브레이크 (Full Air Drum Brake)", "회생제동 전용"], a: 2, exp: "더쎈은 동급 유일 풀에어 드럼 브레이크를 전 차종 기본 채택하고 있습니다." },
-  { cat: "26MY 더쎈 미러프레임", q: "더쎈 미완성차 출고 후 2,300mm 이상 특장 장치 장착 시 필수 선택 옵션은?", o: ["표준 미러 프레임 [DF3]", "광폭 아웃사이드 미러 프레임 [DF5]", "전동 접이식 미러", "코너뷰 카메라"], a: 1, exp: "외측 2,300mm 이상 상부 장착 시 후방 시야 확보를 위해 광폭 미러 프레임[DF5]이 필수입니다." },
-  { cat: "26MY 더쎈 13톤", q: "더쎈 13톤(PENTA) 라인업에 탑재되는 엔진 모델 및 스펙은?", o: ["F4.5 200ps", "ED45 186ps", "ED45 고마력 (206마력 / 76kgf·m)", "DX05 240ps"], a: 2, exp: "더쎈 13톤 모델에는 ED45 206마력 엔진이 탑재됩니다." },
-  { cat: "26MY 신차 하이쎈", q: "26MY 신차 하이쎈(HIXEN)의 차량총중량(GVW) 및 기본 타이어 규격은?", o: ["GVW 10.2톤 / 225 타이어", "GVW 13.0톤 / 205 타이어", "GVW 15.0톤 / 245/70R19.5", "GVW 17.5톤 / 295 타이어"], a: 2, exp: "하이쎈은 차량총중량 15.0톤 세그먼트이며 245/70R19.5 타이어가 기본 적용됩니다." },
-  { cat: "26MY 하이쎈 파워트레인", q: "하이쎈(HIXEN)에 적용되는 2가지 엔진 라인업 및 변속기 매칭 조합은?", o: ["F4.5(235ps)+ZF6MT/앨리슨9AT, DX05(240ps)+ZF8AT", "ED45(186ps)+ZF6MT, DL06(280ps)+ZF9MT", "ISB70(315ps)+ZF9MT, C9(360ps)+ZF12AMT", "F4.5(200ps)+ZF6MT, ED70(280ps)+ZF8AT"], a: 0, exp: "하이쎈은 F4.5(235ps)+ZF6MT/앨리슨9AT 및 DX05(240ps)+ZF8AT로 운영됩니다." },
-  { cat: "26MY 하이쎈 변속기", q: "하이쎈 F4.5 라인업에서 앨리슨 9단 전자동 변속기[MB7]의 옵션 가격은?", o: ["3,500천원", "5,000천원", "6,000천원", "14,000천원"], a: 1, exp: "하이쎈 F4.5 라인업의 앨리슨 9단 AT 옵션 가격은 5,000천원입니다." },
-  { cat: "26MY 하이쎈 적재함", q: "하이쎈 카고 완성차에 'CSP 광폭 적재함' 적용 시 내측폭 규격은?", o: ["2,140mm", "2,280mm", "2,350mm", "2,410mm"], a: 1, exp: "하이쎈 완성차 광폭 적재함의 내측폭은 2,280mm입니다." },
-
-  // 26년 10월 판매정책 & SR 프로모션 (6문항)
-  { cat: "10월 판매정책", q: "2026년 10월 판매조건 기준, 신차 하이쎈(HIXEN) 및 더쎈(LCV)의 자가용/영업용 등록 특별 할인 금액은?", o: ["자가용 50만 / 영업용 100만", "자가용 100만원, 영업용 50만원 할인 (사업자등록증 확인, 재고/재구매 할인 중복 가능)", "일괄 100만원 할인", "자가용 200만 / 영업용 100만"], a: 1, exp: "하이쎈과 더쎈은 사업자등록증 확인 시 자가용 100만원, 영업용 50만원 할인이 제공되며 중복 적용이 가능합니다." },
-  { cat: "10월 판매정책", q: "당사 차량 재구매 고객 또는 경쟁사 차량 보유 고객 구매 할인 금액 기준은?", o: ["전 차종 동일 100만원", "MCV/LCV 50만원, HCV 8x4 덤프 및 트랙터 200만원 할인 (동일 차종 한정, 등록증 확인)", "HCV 300만원, 중형 제외", "법인 200만원, 개인 50만원"], a: 1, exp: "재구매 및 타사차 보유 할인은 MCV/LCV 50만원, HCV 8x4 덤프 및 트랙터 200만원입니다." },
-  { cat: "10월 판매정책", q: "2026년 10월 조건표에서 '25년 8월~10월 완성된 MY25 재고'에 적용되는 에이징 할인은?", o: ["1,000만원", "800만원 (8,000천원)", "500만원", "200만원"], a: 1, exp: "25년 8월~10월 완성된 MY25 에이징 재고 차량은 HCV, MCV, LCV 모두 대당 800만원이 할인됩니다." },
-  { cat: "10월 SR 프로모션", q: "2026년 10월 SR 프로모션 중 '입사 24개월 이하 SR 대상 기본 지원 조건'은?", o: ["맥쎈 2대 이상 출고 시 100만원", "차종/대수 관계없이 10월 중 1대 이상 판매 시 50만원 정액 지급 (재입사자/대표 제외)", "더쎈 3대 이상 시 50만원", "입사 12개월 이하만 50만원"], a: 1, exp: "입사 24개월 이하 SR은 10월 중 1대 이상 출고 시 차종 불문 50만원이 정액 지급됩니다." },
-  { cat: "10월 SR 프로모션", q: "2026년 10월 프로모션에서 '대당 200만원'의 특별 인센티브가 지급되는 대상 차종은?", o: ["HCV 전 차종", "신차 하이쎈(HIXEN) 전 차량, 그리고 MCV/LCV 중 MY25(2025년 완성차)", "맥쎈 트랙터 MY26 전 차량", "구쎈 카고 전 차량"], a: 1, exp: "신차 하이쎈 전 차량 및 MCV/LCV MY25 장기재고 판매 시 대당 200만원이 지급됩니다." },
-  { cat: "10월 SR 프로모션", q: "입사 18개월 차 SR이 10월에 '하이쎈 1대'와 'MY25 더쎈 1대'를 출고 시 총 인센티브와 지급 조건은?", o: ["총 400만원 / 퇴사자도 수령 가능", "총 450만원 (기본 50만 + 하이쎈 200만 + 더쎈 MY25 200만) / 2026년 11월 1일 재직 중인 SR에 한함", "총 250만원 (대당 200만 1회 한정)", "총 500만원"], a: 1, exp: "기본 정액 50만원에 하이쎈 200만원, 더쎈 MY25 200만원이 합산되어 총 450만원이 11월 1일 재직자에게 지급됩니다." }
-];
-
-// --- 헬퍼 함수 ---
+/* ===== 공통 ===== */
 const $ = id => document.getElementById(id);
+const shuffle = a => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const showModal = (t, m) => { $('modal-title').innerText = t; $('modal-msg').innerText = m; $('modal-box').classList.remove('hidden'); };
 const closeModal = () => $('modal-box').classList.add('hidden');
-window.sideNotice = k => {
-  const msgs = {
-    '전자결재': '결재 올리기 전 세일즈 마스터 평가부터 통과하세요! 📑',
-    '차량견적': '26MY 하이쎈 & 맥쎈 최신 가격표가 시스템에 반영되었습니다 🚚',
-    '특장도면': '특장 상담 시 [LY1] 샤시 레이아웃과 배기파이프 간섭을 꼭 확인하세요 📐',
-    '마스터혜택': '골드 마스터 달성 시 신차 사전 물량 쿼터 및 최고급 판촉물 패키지 지원 👑'
-  };
-  showModal(k, msgs[k]);
-};
 window.togglePanicMode = () => $('panic-overlay').classList.toggle('hidden');
 window.addEventListener('keydown', e => { if (e.key === 'Escape') togglePanicMode(); });
+const VIEWS = ['intro', 'm1', 'm2', 'result'];
+function show(v) { VIEWS.forEach(n => { const el = $('view-' + n); el.classList.add('hidden'); el.classList.remove('flex'); }); const t = $('view-' + v); t.classList.remove('hidden'); if (v === 'm1' || v === 'm2') t.classList.add('flex'); $('main-content').scrollTop = 0; }
 
-function setQuizMode(m) {
-  quizMode = m;
-  $('btn-mode-speed').className = m === 'speed' 
-    ? 'py-2.5 px-3 rounded-xl border text-xs font-bold border-blue-600 bg-blue-50 text-blue-700 transition'
-    : 'py-2.5 px-3 rounded-xl border text-xs font-medium border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition';
-  $('btn-mode-full').className = m === 'full'
-    ? 'py-2.5 px-3 rounded-xl border text-xs font-bold border-blue-600 bg-blue-50 text-blue-700 transition'
-    : 'py-2.5 px-3 rounded-xl border text-xs font-medium border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition';
+/* 사운드 (기본 꺼짐: 사무실용) */
+let soundOn = false, ac = null;
+function toggleSound() { soundOn = !soundOn; $('btn-sound').innerText = soundOn ? '🔊' : '🔇'; beep(660, 'sine', .1); }
+function beep(f, type, d) {
+  if (!soundOn) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume();
+    const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(.15, ac.currentTime); g.gain.exponentialRampToValueAtTime(.01, ac.currentTime + d);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d);
+  } catch (e) {}
 }
+const sfxOk = () => { beep(523, 'triangle', .1); setTimeout(() => beep(659, 'triangle', .15), 100); };
+const sfxBad = () => beep(220, 'sawtooth', .25);
 
+/* ===== 상태 ===== */
+let srName = '', quizMode = 'speed', done = false, practice = false, runId = 0, started = 0;
+let sw = null, quizList = [], qi = 0, qLeft = Q_SEC, qTimer = null, gTimer = null, gLeft = SPEED_SEC;
+let qLocked = false, ll = { half: true, time: true };
+let correct = 0, points = 0, streak = 0, bestStreak = 0, answers = [], wrongs = [], qStart = 0, sent = false;
+const uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function updateIntro() {
+  const speed = quizMode === 'speed';
+  $('btn-mode-speed').className = 'py-2.5 px-2 rounded-xl border text-xs ' + (speed ? 'font-bold border-blue-600 bg-blue-50 text-blue-700' : 'font-medium border-slate-200 bg-white text-slate-600');
+  $('btn-mode-full').className = 'py-2.5 px-2 rounded-xl border text-xs ' + (!speed ? 'font-bold border-blue-600 bg-blue-50 text-blue-700' : 'font-medium border-slate-200 bg-white text-slate-600');
+  $('mode-desc').innerText = speed ? `${SPEED_N}문항 랜덤 · 제한시간 ${SPEED_SEC / 60}분` : `전체 ${POOL.length}문항 · 전체 제한시간 없음 (문항당 ${Q_SEC}초)`;
+}
+function setQuizMode(m) { quizMode = m; updateIntro(); }
+updateIntro();
+
+function fmtTime(s) { return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
 function startChallenge() {
-  srName = $('sr-name').value.trim();
-  if (!srName) { showModal('입력 필요', '성명과 소속 대리점을 입력해주세요.'); return; }
-  $('header-user').innerText = srName;
-  $('view-intro').classList.add('hidden');
-  $('view-module1').classList.remove('hidden');
-  
-  // 글로벌 5분 타이머 시작
-  globalInterval = setInterval(() => {
-    globalTimerSec--;
-    const min = String(Math.floor(globalTimerSec / 60)).padStart(2, '0');
-    const sec = String(globalTimerSec % 60).padStart(2, '0');
-    $('global-timer').innerText = `${min}:${sec}`;
-    if (globalTimerSec <= 30) $('global-timer').classList.add('text-red-600');
-    if (globalTimerSec <= 0) {
-      clearInterval(globalInterval);
-      finishChallenge();
-    }
-  }, 1000);
-
-  initSwipeModule();
-}
-
-// --- 모듈 1: 스피드 특장 매칭 로직 ---
-function initSwipeModule() {
-  swipeIndex = 0;
-  swipeScore = 0;
-  $('swipe-total').innerText = SWIPE_CARDS.length;
-  renderSwipeCard();
-  setupTouchSwipe();
-}
-
-function renderSwipeCard() {
-  if (swipeIndex >= SWIPE_CARDS.length) {
-    // 모듈 1 완료 -> 모듈 2로 이동
-    sfxCorrect();
-    $('view-module1').classList.add('hidden');
-    $('view-module2').classList.remove('hidden');
-    initQuizModule();
-    return;
-  }
-  const item = SWIPE_CARDS[swipeIndex];
-  $('swipe-current').innerText = swipeIndex + 1;
-  $('card-badge').innerText = item.badge;
-  $('card-payload').innerText = item.payload;
-  $('card-client').innerText = item.client;
-  $('card-dialogue').innerText = item.dialogue;
-  $('card-spv').innerText = item.spv;
-  $('card-req').innerText = item.req;
-  
-  const el = $('card-element');
-  el.style.transform = 'translate(0px, 0px) rotate(0deg)';
-  el.style.opacity = '1';
-}
-
-function handleManualChoice(choice) {
-  const item = SWIPE_CARDS[swipeIndex];
-  const isCorrect = (choice === item.target);
-  if (isCorrect) {
-    sfxCorrect();
-    swipeScore++;
-    animateCardOut(1);
-  } else {
-    sfxWrong();
-    animateCardOut(-1);
-  }
-}
-
-function animateCardOut(dir) {
-  const el = $('card-element');
-  el.style.transform = `translate(${dir * 300}px, -40px) rotate(${dir * 25}deg)`;
-  el.style.opacity = '0';
-  setTimeout(() => {
-    swipeIndex++;
-    renderSwipeCard();
-  }, 220);
-}
-
-function setupTouchSwipe() {
-  const el = $('card-element');
-  let startX = 0, startY = 0, currentX = 0, isDragging = false;
-
-  const onStart = e => {
-    isDragging = true;
-    startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-    startY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-  };
-  const onMove = e => {
-    if (!isDragging) return;
-    const x = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-    currentX = x - startX;
-    el.style.transform = `translate(${currentX}px, 0px) rotate(${currentX * 0.06}deg)`;
-  };
-  const onEnd = () => {
-    if (!isDragging) return;
-    isDragging = false;
-    if (currentX > 90) {
-      // 오른쪽 스와이프: 구쎈/맥쎈
-      handleManualChoice('KUXEN');
-    } else if (currentX < -90) {
-      // 왼쪽 스와이프: 하이쎈/더쎈
-      handleManualChoice('HIXEN');
-    } else {
-      el.style.transform = 'translate(0px, 0px) rotate(0deg)';
-    }
-    currentX = 0;
-  };
-
-  el.addEventListener('touchstart', onStart, { passive: true });
-  el.addEventListener('touchmove', onMove, { passive: true });
-  el.addEventListener('touchend', onEnd);
-  el.addEventListener('mousedown', onStart);
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onEnd);
-}
-
-// --- 모듈 2: 실무 스피드 퀴즈 로직 ---
-function initQuizModule() {
-  quizIndex = 0;
-  quizScore = 0;
-  quizStreak = 0;
-  
+  const name = $('sr-name').value.trim();
+  if (!name) { showModal('입력 필요', '성명과 소속 대리점을 입력해주세요.'); return; }
+  srName = name; $('header-user').innerText = name; started = Date.now(); done = false; practice = false; sent = false;
+  correct = 0; points = 0; streak = 0; bestStreak = 0; answers = []; wrongs = [];
   if (quizMode === 'speed') {
-    // 91문항 중 랜덤 15문항 셔플
-    activeQuizList = [...MASTER_QUIZ_POOL].sort(() => Math.random() - 0.5).slice(0, 15);
-  } else {
-    activeQuizList = [...MASTER_QUIZ_POOL];
-  }
-  $('quiz-total-display').innerText = activeQuizList.length;
-  renderQuestion();
+    gLeft = SPEED_SEC; $('global-timer').innerText = fmtTime(gLeft);
+    gTimer = setInterval(() => {
+      gLeft--; $('global-timer').innerText = fmtTime(Math.max(0, gLeft));
+      $('global-timer').classList.toggle('text-red-600', gLeft <= 30);
+      if (gLeft <= 0) finish();
+    }, 1000);
+  } else $('global-timer').innerText = '제한없음';
+  show('m1'); initSwipe();
 }
 
-function renderQuestion() {
-  clearInterval(qTimer);
-  if (quizIndex >= activeQuizList.length) {
-    finishChallenge();
-    return;
-  }
-  const q = activeQuizList[quizIndex];
-  $('quiz-num').innerText = quizIndex + 1;
-  $('quiz-category').innerText = q.cat;
-  $('quiz-question').innerText = q.q;
-  $('quiz-score').innerText = quizScore;
-  
-  const fb = $('quiz-feedback');
-  fb.className = 'hidden';
-  fb.innerText = '';
+/* ===== 모듈 1: 추천 차종 맞다/아니다 스와이프 ===== */
+function initSwipe() {
+  const keys = Object.keys(VEH);
+  sw = { list: shuffle(SWIPE_CARDS).map(c => ({ c, prop: Math.random() < 0.5 ? c.target : pick(keys.filter(k => k !== c.target)) })), i: 0, score: 0, locked: false };
+  $('swipe-total').innerText = sw.list.length; renderSwipe(); bindSwipe();
+}
+function renderSwipe() {
+  if (done) return;
+  if (sw.i >= sw.list.length) { goQuiz(); return; }
+  const { c, prop } = sw.list[sw.i];
+  $('swipe-current').innerText = sw.i + 1; $('card-badge').innerText = c.badge; $('card-payload').innerText = c.payload;
+  $('card-client').innerText = c.client; $('card-dialogue').innerText = c.dialogue; $('card-spv').innerText = c.spv; $('card-req').innerText = c.req;
+  $('card-proposal').innerText = VEH[prop];
+  const el = $('card-element'); el.style.transition = 'none'; el.style.transform = ''; el.style.opacity = '1'; void el.offsetWidth; el.style.transition = '';
+  $('swipe-fb').classList.add('hidden'); $('swipe-btns').classList.remove('hidden'); sw.locked = false;
+}
+function answerSwipe(yes) {
+  if (done || !sw || sw.locked) return; sw.locked = true;
+  const { c, prop } = sw.list[sw.i], ok = (prop === c.target) === yes;
+  if (ok) { sw.score++; sfxOk(); } else sfxBad();
+  const el = $('card-element'); el.style.transform = `translate(${yes ? 320 : -320}px,-30px) rotate(${yes ? 20 : -20}deg)`; el.style.opacity = '0';
+  $('swipe-btns').classList.add('hidden');
+  const fb = $('swipe-fb');
+  fb.className = 'w-full p-4 rounded-xl text-xs leading-relaxed pop border ' + (ok ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900');
+  fb.innerHTML = `<b>${ok ? '✅ 정답!' : '❌ 오답'}</b> 이 고객에게 맞는 차종은 <b>${esc(VEH[c.target])}</b><br>${esc(c.desc)}<button class="mt-3 w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg text-sm" onclick="nextSwipe()">다음 ▶</button>`;
+}
+function nextSwipe() { if (done) return; sw.i++; renderSwipe(); }
+let swipeBound = false;
+function bindSwipe() {
+  if (swipeBound) return; swipeBound = true;
+  const el = $('card-element'); let sx = 0, dx = 0, drag = false;
+  const X = e => (e.touches ? e.touches[0].clientX : e.clientX);
+  const start = e => { if (sw.locked) return; drag = true; sx = X(e); dx = 0; el.style.transition = 'none'; };
+  const move = e => { if (!drag) return; dx = X(e) - sx; el.style.transform = `translateX(${dx}px) rotate(${dx * 0.05}deg)`; };
+  const end = () => { if (!drag) return; drag = false; el.style.transition = ''; if (Math.abs(dx) > 80) answerSwipe(dx > 0); else el.style.transform = ''; dx = 0; };
+  el.addEventListener('touchstart', start, { passive: true }); el.addEventListener('touchmove', move, { passive: true }); el.addEventListener('touchend', end);
+  el.addEventListener('mousedown', start); window.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+}
 
-  const optsBox = $('quiz-options');
-  optsBox.innerHTML = '';
-  q.o.forEach((optText, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-xs sm:text-sm font-medium transition flex items-center justify-between group';
-    btn.innerHTML = `<span>${optText}</span><span class="text-slate-300 group-hover:text-blue-500 font-bold ml-2">선택</span>`;
-    btn.onclick = () => handleAnswer(idx);
-    optsBox.appendChild(btn);
+/* ===== 모듈 2: 실전 퀴즈 ===== */
+const prepQ = q => { const right = q.o[q.a], o = shuffle(q.o); return Object.assign({}, q, { o, a: o.indexOf(right) }); };
+function goQuiz() {
+  quizList = (quizMode === 'speed' ? shuffle(POOL).slice(0, SPEED_N) : shuffle(POOL)).map(prepQ);
+  qi = 0; show('m2'); $('quiz-total-display').innerText = quizList.length; renderQ();
+}
+function renderQ() {
+  clearInterval(qTimer); clearTimeout(window._autoNext);
+  if (done) return;
+  if (qi >= quizList.length) { practice ? finishPractice() : finish(); return; }
+  const q = quizList[qi], boss = (qi + 1) % 5 === 0; runId++;
+  qLocked = false; qLeft = Q_SEC; qStart = Date.now();
+  $('quiz-num').innerText = qi + 1; $('quiz-category').innerText = q.cat; $('quiz-question').innerText = q.q; $('quiz-score').innerText = points;
+  $('quiz-badge').innerText = boss ? '👔 본부장 돌발 문제 (점수 2배)' : (streak >= 2 ? `🔥 ${streak}연속 정답!` : '');
+  $('quiz-feedback').className = 'hidden'; $('quiz-next').classList.add('hidden');
+  $('ll-half').disabled = !ll.half || practice; $('ll-time').disabled = !ll.time || practice;
+  const box = $('quiz-options'); box.innerHTML = '';
+  q.o.forEach((t, i) => {
+    const b = document.createElement('button'); b.id = 'opt' + i;
+    b.className = 'w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-sm font-medium transition';
+    b.textContent = t; b.onclick = () => answerQ(i); box.appendChild(b);
   });
-
-  // 타임어택 프로그레스 바 (15초)
-  qTimeLeft = 15;
-  const bar = $('question-timer-bar');
-  bar.style.width = '100%';
-  bar.className = 'bg-blue-600 h-full transition-all duration-100 linear';
-
+  const bar = $('question-timer-bar'); bar.style.width = '100%'; bar.className = 'bg-blue-600 h-full';
   qTimer = setInterval(() => {
-    qTimeLeft -= 0.1;
-    const pct = Math.max(0, (qTimeLeft / 15) * 100);
-    bar.style.width = `${pct}%`;
-    if (qTimeLeft <= 4) bar.className = 'bg-red-500 h-full transition-all duration-100 linear';
-    if (qTimeLeft <= 0) {
-      clearInterval(qTimer);
-      handleAnswer(-1); // 시간 초과
-    }
+    qLeft -= 0.1; bar.style.width = Math.max(0, Math.min(100, qLeft / Q_SEC * 100)) + '%';
+    if (qLeft <= 4) bar.className = 'bg-red-500 h-full';
+    if (qLeft <= 0) answerQ(-1);
   }, 100);
 }
-
-function handleAnswer(choiceIdx) {
-  clearInterval(qTimer);
-  const q = activeQuizList[quizIndex];
-  const isCorrect = (choiceIdx === q.a);
-  const fb = $('quiz-feedback');
-  const opts = $('quiz-options').children;
-
-  Array.from(opts).forEach((btn, idx) => {
-    btn.disabled = true;
-    if (idx === q.a) btn.className = 'w-full text-left p-3.5 rounded-xl border-2 border-green-500 bg-green-50 text-xs sm:text-sm font-bold text-green-900';
-    else if (idx === choiceIdx) btn.className = 'w-full text-left p-3.5 rounded-xl border-2 border-red-400 bg-red-50 text-xs sm:text-sm text-red-900 line-through';
-    else btn.className = 'w-full text-left p-3.5 rounded-xl border border-slate-200 text-xs sm:text-sm opacity-40';
+function useHalf() {
+  if (qLocked || !ll.half) return; ll.half = false; $('ll-half').disabled = true;
+  const q = quizList[qi];
+  shuffle([0, 1, 2, 3].filter(i => i !== q.a)).slice(0, 2).forEach(i => { const b = $('opt' + i); b.disabled = true; b.classList.add('opacity-30', 'line-through'); });
+}
+function useTime() { if (qLocked || !ll.time) return; ll.time = false; $('ll-time').disabled = true; qLeft = Math.min(qLeft + 8, Q_SEC + 8); }
+function answerQ(idx) {
+  if (qLocked || done) return; qLocked = true; clearInterval(qTimer);
+  const q = quizList[qi], ok = idx === q.a, boss = (qi + 1) % 5 === 0, sec = Math.round((Date.now() - qStart) / 100) / 10;
+  Array.from($('quiz-options').children).forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.a) b.className = 'w-full text-left p-3.5 rounded-xl border-2 border-green-500 bg-green-50 text-sm font-bold text-green-900';
+    else if (i === idx) b.className = 'w-full text-left p-3.5 rounded-xl border-2 border-red-400 bg-red-50 text-sm text-red-900 line-through';
+    else b.className = 'w-full text-left p-3.5 rounded-xl border border-slate-200 text-sm opacity-40';
   });
-
-  if (isCorrect) {
-    sfxCorrect();
-    quizScore += 10;
-    quizStreak++;
-    $('quiz-score').innerText = quizScore;
-    if (quizStreak >= 3) {
-      $('quiz-streak').innerText = `🔥 ${quizStreak}연속 정답! (+보너스)`;
-      $('quiz-streak').classList.remove('hidden');
-    }
-    fb.className = 'p-3.5 rounded-xl text-xs leading-relaxed bg-green-50 text-green-900 border border-green-200 block';
-    fb.innerHTML = `<b>✅ 정답입니다!</b><br>${q.exp}`;
+  const fb = $('quiz-feedback');
+  if (!practice) answers.push({ cat: q.cat, q: q.q.slice(0, 60), ok, sec });
+  if (ok) {
+    sfxOk();
+    if (!practice) {
+      streak++; bestStreak = Math.max(bestStreak, streak); correct++;
+      const speed = Math.min(5, Math.floor(qLeft / 3)), combo = streak >= 2 ? Math.min(streak - 1, 5) * 2 : 0, gain = (10 + speed + combo) * (boss ? 2 : 1);
+      points += gain; $('quiz-score').innerText = points;
+      fb.innerHTML = `<b>✅ 정답! +${gain}점</b> <span class="text-green-700">(기본 10 + 속도 ${speed} + 콤보 ${combo}${boss ? ' × 2' : ''})</span><br>${esc(q.exp)}`;
+    } else fb.innerHTML = `<b>✅ 정답!</b><br>${esc(q.exp)}`;
+    fb.className = 'p-3.5 rounded-xl text-xs leading-relaxed bg-green-50 text-green-900 border border-green-200 block pop';
+    const rid = runId; window._autoNext = setTimeout(() => { if (rid === runId && !done) nextQuestion(); }, 1600);
   } else {
-    sfxWrong();
-    quizStreak = 0;
-    $('quiz-streak').classList.add('hidden');
-    fb.className = 'p-3.5 rounded-xl text-xs leading-relaxed bg-red-50 text-red-900 border border-red-200 block';
-    fb.innerHTML = `<b>❌ 오답 (정답: ${q.o[q.a]})</b><br>${q.exp}`;
+    sfxBad();
+    if (!practice) { streak = 0; wrongs.push({ q: q.q, cat: q.cat, mine: idx >= 0 ? q.o[idx] : '(시간 초과)', right: q.o[q.a], exp: q.exp, raw: q }); }
+    fb.innerHTML = `<b>❌ ${idx < 0 ? '시간 초과' : '오답'}</b> 정답: <b>${esc(q.o[q.a])}</b><br>${esc(q.exp)}`;
+    fb.className = 'p-3.5 rounded-xl text-xs leading-relaxed bg-red-50 text-red-900 border border-red-200 block pop';
   }
+  $('quiz-next').classList.remove('hidden');
+}
+function nextQuestion() { if (done) return; clearTimeout(window._autoNext); qi++; renderQ(); }
 
-  setTimeout(() => {
-    quizIndex++;
-    renderQuestion();
-  }, 1800);
+/* ===== 결과 ===== */
+function finish() {
+  if (done) return; done = true; clearInterval(qTimer); clearInterval(gTimer); clearTimeout(window._autoNext);
+  const sTot = sw ? sw.list.length : SWIPE_CARDS.length, sOk = sw ? sw.score : 0, qTot = quizList.length, tot = sTot + qTot;
+  const pct = tot ? Math.round((sOk + correct) / tot * 100) : 0, secs = Math.round((Date.now() - started) / 1000);
+  sfxOk(); show('result');
+  $('res-subtitle').innerText = `수검자: ${srName}`; $('res-swipe-score').innerText = `${sOk} / ${sTot}`; $('res-quiz-score').innerText = `${correct} / ${qTot}`;
+  $('res-total-score').innerText = `${pct}%`; $('res-points').innerText = `${points}점`; $('res-combo').innerText = `${bestStreak}연속`; $('res-time').innerText = fmtTime(secs);
+  let badge, title;
+  if (pct >= 85) { badge = '🥇'; title = '골드 세일즈 마스터 (군산 레전드)'; }
+  else if (pct >= 70) { badge = '🥈'; title = '실버 세일즈 마스터 (대리점 에이스)'; }
+  else { badge = '🥉'; title = '브론즈 세일즈 마스터 (출고장 신입)'; }
+  $('res-badge').innerText = badge; $('res-title').innerText = title;
+  renderWrongNote();
+  sendResult({ sOk, sTot, qTot, pct, secs, title });
+}
+function renderWrongNote() {
+  const has = wrongs.length > 0;
+  $('wrong-note').classList.toggle('hidden', !has); $('btn-retry').classList.toggle('hidden', !has); $('wrong-count').innerText = wrongs.length;
+  $('wrong-list').innerHTML = wrongs.map(w => `<div class="border-t border-red-200 pt-2"><div class="text-[10px] text-red-500 font-bold">${esc(w.cat)}</div><div class="font-semibold text-slate-800">${esc(w.q)}</div><div class="text-red-700 mt-1">내 답: ${esc(w.mine)}</div><div class="text-green-700">정답: ${esc(w.right)}</div><div class="text-slate-600 mt-1">${esc(w.exp)}</div></div>`).join('');
+}
+function retryWrong() {
+  if (!wrongs.length) return;
+  practice = true; done = false; clearInterval(gTimer); $('global-timer').innerText = '복습';
+  quizList = wrongs.map(w => prepQ(w.raw)); qi = 0; show('m2'); $('quiz-total-display').innerText = quizList.length; renderQ();
+}
+function finishPractice() {
+  done = true; practice = false; show('result');
+  showModal('오답 복습 완료', '틀렸던 문제를 모두 다시 풀었습니다. 복습 결과는 점수에 반영되지 않습니다.');
 }
 
-// --- 4. 챌린지 종료 및 인증서 산출 ---
-function finishChallenge() {
-  clearInterval(globalInterval);
-  clearInterval(qTimer);
-  sfxCorrect();
-  $('view-module1').classList.add('hidden');
-  $('view-module2').classList.add('hidden');
-  $('view-result').classList.remove('hidden');
-
-  $('res-subtitle').innerText = `수검자: ${srName}`;
-  $('res-swipe-score').innerText = `${swipeScore} / ${SWIPE_CARDS.length}`;
-  $('res-quiz-score').innerText = `${quizScore / 10} / ${activeQuizList.length}`;
-
-  const totalPoints = (swipeScore * 10) + quizScore;
-  const maxPoints = (SWIPE_CARDS.length * 10) + (activeQuizList.length * 10);
-  const pct = Math.round((totalPoints / maxPoints) * 100);
-  $('res-total-score').innerText = `${pct}점`;
-
-  if (pct >= 85) {
-    $('res-badge').innerText = '🥇';
-    $('res-title').innerText = '골드 세일즈 마스터 (상위 10%)';
-    $('res-benefit').innerHTML = '• <b>2026 하이쎈·맥쎈 사전 예약 쿼터 우선 배정권</b> 부여<br>• Certified Gold Master 명함 공식 엠블럼 및 본사 시승차량 우선 배정';
-  } else if (pct >= 70) {
-    $('res-badge').innerText = '🥈';
-    $('res-title').innerText = '실버 세일즈 마스터 (상위 30%)';
-    $('res-benefit').innerHTML = '• 대리점 판촉 지원금 추가 가점 부여<br>• 신차 런칭 초청 및 실버 마스터 공식 인증 수여';
-  } else {
-    $('res-badge').innerText = '🥉';
-    $('res-title').innerText = '브론즈 세일즈 마스터';
-    $('res-benefit').innerHTML = '• 전 차종 기본 프로모션 적용 (취약 차종 오답노트 학습 권장)';
-  }
+/* ===== 구글 시트 전송 ===== */
+const urlOk = () => /^https:\/\/script\.google\.com\//.test(SHEET_URL);
+function setSync(t, c) { const el = $('sync-status'); el.textContent = t; el.style.color = c; }
+const post = p => fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(p) });
+function queueP(p) { try { const q = JSON.parse(localStorage.getItem('smc_pending') || '[]'); q.push(p); localStorage.setItem('smc_pending', JSON.stringify(q.slice(-20))); } catch (e) {} }
+function sendResult(r) {
+  if (sent) return; sent = true;
+  if (!urlOk()) { setSync('⚠️ 시트 연동 주소(SHEET_URL)가 아직 설정되지 않았습니다.', '#b45309'); return; }
+  const cats = {}; answers.forEach(a => { const c = cats[a.cat] || (cats[a.cat] = { ok: 0, total: 0 }); c.total++; if (a.ok) c.ok++; });
+  const p = { key: SHEET_KEY, id: uid, name: srName, mode: quizMode === 'speed' ? `스피드(${SPEED_N}문항)` : '전체 완주', swipe: r.sOk, swipeTotal: r.sTot, quiz: correct, quizTotal: r.qTot, pct: r.pct, grade: r.title, sec: r.secs, points, bestStreak, device: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? '모바일' : 'PC', cats, answers };
+  setSync('📤 결과를 시트로 전송 중...', '#64748b');
+  post(p).then(() => setSync('✅ 결과 전송 완료 (시트에 잠시 후 반영됩니다)', '#15803d')).catch(() => { queueP(p); setSync('⚠️ 전송 실패 — 다음 접속 때 자동으로 다시 보냅니다.', '#b45309'); });
 }
+try { const q = JSON.parse(localStorage.getItem('smc_pending') || '[]'); if (q.length && urlOk()) { localStorage.removeItem('smc_pending'); q.forEach(p => post(p).catch(() => queueP(p))); } } catch (e) {}
 
 function downloadReport() {
-  const content = `================================================
+  const txt = `================================================
 타타대우모빌리티 세일즈 마스터 챌린지 성적표
 ================================================
 수검자 성명 / 소속: ${srName}
 평가 일시: ${new Date().toLocaleString()}
-진행 모드: ${quizMode === 'speed' ? '스피드 챌린지 (15문항)' : '전체 완주 (91문항)'}
+진행 모드: ${quizMode === 'speed' ? `스피드 챌린지 (${SPEED_N}문항)` : '마스터 완주 (전체 ' + POOL.length + '문항)'}
 
 [평가 결과]
-- 모듈 1 (특장 스와이프 매칭): ${swipeScore} / ${SWIPE_CARDS.length} 완료
-- 모듈 2 (실무 퀴즈 득점): ${quizScore / 10} / ${activeQuizList.length} 문항 정답
-- 최종 마스터 등급: ${$('res-title').innerText}
-- 종합 역량 점수: ${$('res-total-score').innerText}
-
-[부여 혜택]
-- 하이쎈 및 맥쎈 신차 사전 계약 물량 우선 배정권
-- 세일즈 마스터 인증 엠블럼 표기 권한
+- 특장 매칭: ${$('res-swipe-score').innerText}
+- 실무 퀴즈: ${$('res-quiz-score').innerText}
+- 정확도: ${$('res-total-score').innerText}
+- 마스터 포인트: ${$('res-points').innerText} / 최고 콤보: ${$('res-combo').innerText}
+- 칭호: ${$('res-title').innerText}
+※ 재미용 칭호이며 실제 혜택은 별도 안내에 따릅니다.
 ================================================`;
-
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `타타대우_세일즈마스터_성적표_${srName || 'SR'}.txt`;
-  a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+  a.download = `타타대우_세일즈마스터_성적표_${srName || 'SR'}.txt`; a.click();
 }
+if (window.visualViewport) { const fit = () => { document.body.style.height = window.visualViewport.height + 'px'; }; window.visualViewport.addEventListener('resize', fit); fit(); }
 </script>
 </body>
 </html>
