@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>타타대우 세일즈 마스터 챌린지 v1.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', '"Malgun Gothic"', 'sans-serif'] },
+      colors: {
+        tata: {
+          bg: '#eef1f5',
+          panel: '#ffffff',
+          border: '#e1e6ee',
+          text: '#1f2937',
+          muted: '#6b7280',
+          blue: '#0a4da2',
+          navy: '#1b3a6b',
+          success: '#15803d',
+          warning: '#b45309',
+          danger: '#dc2626'
+        }
+      }
+    }
+  }
+}
+</script>
+<style>
+html, body { height: 100%; user-select: none; }
+body { height: 100vh; height: 100dvh; background: #eef1f5; color: #1f2937; overflow: hidden; font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+.card { background: #fff; border: 1px solid #e1e6ee; border-radius: .75rem; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+
+/* Swipe Card Stack Animation */
+.swipe-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+  touch-action: none;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+}
+.swipe-card.dragging {
+  transition: none !important;
+}
+
+/* Animations */
+@keyframes popFeedback {
+  0% { transform: scale(0.6) translateY(20px); opacity: 0; }
+  60% { transform: scale(1.1) translateY(-6px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.animate-pop { animation: popFeedback 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(10, 77, 162, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(10, 77, 162, 0); }
+}
+.pulse-glow { animation: pulseGlow 1.8s infinite; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+</style>
+</head>
+<body class="h-full flex flex-col">
+
+<!-- HEADER -->
+<header class="bg-white border-b border-tata-border px-3 sm:px-4 h-12 sm:h-14 flex items-center justify-between shrink-0 z-20 shadow-sm">
+  <div class="flex items-center space-x-2 sm:space-x-3">
+    <div class="flex items-baseline space-x-1 font-extrabold text-base sm:text-lg tracking-tight">
+      <span class="text-[#0a4da2]">TATA</span>
+      <span class="text-[#1b3a6b]">DAEWOO</span>
+    </div>
+    <span class="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-semibold flex items-center gap-1">
+      🎯 세일즈 마스터 챌린지
+    </span>
+  </div>
+  
+  <div class="flex items-center space-x-2 sm:space-x-4 text-xs">
+    <div id="top-timer-wrap" class="hidden sm:flex items-center font-bold px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 tabular-nums">
+      ⏱️ <span id="game-clock" class="ml-1">05:00</span>
+    </div>
+    <div class="flex items-center space-x-1.5 text-slate-600 bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
+      <span>👤</span>
+      <strong id="header-user-display" class="text-tata-text font-bold">김정환 SR</strong>
+      <span id="header-grade-tag" class="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold border border-amber-300">평가 대기</span>
+    </div>
+    <button onclick="togglePanicMode()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded text-xs border border-slate-300 font-medium transition" title="상사 출몰 시 엑셀 화면 전환">
+      🚨 <span class="hidden md:inline">Panic Key</span> (Esc)
+    </button>
+  </div>
+</header>
+
+<!-- MAIN APP BODY -->
+<main class="flex-1 flex overflow-hidden relative">
+
+  <!-- INTRANET ASIDE NAVIGATION -->
+  <aside class="hidden md:flex flex-col items-center w-[84px] bg-white border-r border-tata-border py-4 space-y-4 shrink-0 z-10">
+    <button onclick="sideMenu('결재')" class="flex flex-col items-center text-[11px] text-slate-600 hover:text-blue-700 group transition">
+      <span class="w-11 h-11 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center text-xl mb-1 shadow-sm">📝</span>전자결재
+    </button>
+    <button onclick="sideMenu('견적')" class="flex flex-col items-center text-[11px] text-slate-600 hover:text-blue-700 group transition">
+      <span class="w-11 h-11 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center text-xl mb-1 shadow-sm">🚛</span>차량견적
+    </button>
+    <button onclick="sideMenu('특장')" class="flex flex-col items-center text-[11px] text-slate-600 hover:text-blue-700 group transition">
+      <span class="w-11 h-11 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center text-xl mb-1 shadow-sm">🏗️</span>특장도면
+    </button>
+    <button onclick="sideMenu('포상')" class="flex flex-col items-center text-[11px] text-slate-600 hover:text-blue-700 group transition">
+      <span class="w-11 h-11 rounded-xl bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center text-xl mb-1 shadow-sm text-amber-600">🏆</span>마스터혜택
+    </button>
+    <div class="flex-1"></div>
+    <button onclick="sideMenu('규정')" class="flex flex-col items-center text-[10px] text-slate-400 hover:text-slate-700">
+      <span>ℹ️ 평가안내</span>
+    </button>
+  </aside>
+
+  <!-- CONTENT CONTAINER -->
+  <div class="flex-1 flex flex-col overflow-y-auto p-3 sm:p-5 relative">
+
+    <!-- 1. INTRO / REGISTRATION SCREEN -->
+    <section id="screen-intro" class="m-auto max-w-xl w-full card p-5 sm:p-8 space-y-5 animate-pop">
+      <div class="text-center space-y-2">
+        <div class="inline-flex px-3 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-xs font-bold">
+          2026 TATA DAEWOO MOBILITY
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">세일즈 마스터 챌린지</h1>
+        <p class="text-xs sm:text-sm text-slate-500">기아 역량검사형 실전 게이미피케이션 직무 평가 및 교육 시스템</p>
+      </div>
+
+      <div class="bg-slate-50 border border-tata-border rounded-xl p-4 text-xs leading-relaxed text-slate-700 space-y-2">
+        <div class="font-bold text-blue-800 text-sm flex items-center gap-1.5">
+          <span>📋</span> 5분 챌린지 평가 요강
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-slate-600">
+          <div class="p-2 bg-white rounded-lg border border-slate-200">
+            <b class="text-blue-700 block mb-0.5">모듈 ① 스피드 특장 매칭 (8문항)</b>
+            고객 업종 카드를 보고 최적의 섀시 모델(더쎈·구쎈·맥쎈·노부스)로 스와이프 매칭!
+          </div>
+          <div class="p-2 bg-white rounded-lg border border-slate-200">
+            <b class="text-blue-700 block mb-0.5">모듈 ② MC22 스피드 퀴즈 (7문항)</b>
+            신규 파워트레인, 옵션 코드, 법규 변경사항을 15초 내에 돌파하는 순발력 테스트!
+          </div>
+        </div>
+        <p class="text-[11px] text-amber-700 pt-1 font-semibold">
+          ⭐ 평가 결과에 따라 <span class="underline">골드/실버/브론즈 마스터</span> 등급이 부여되며, 인기 차종 사전 쿼터 우선 배정 혜택이 연동됩니다.
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">영업사원(SR) 성명 및 소속 대리점</label>
+          <input type="text" id="input-sr-name" value="김정환 / 군산직판" placeholder="예: 홍길동 / 전주대리점" 
+            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-blue-600 font-medium">
+        </div>
+
+        <button onclick="startChallenge()" 
+          class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base shadow-lg transition flex items-center justify-center gap-2">
+          <span>🚀 세일즈 챌린지 시작 (제한시간 5분)</span>
+        </button>
+      </div>
+
+      <p class="text-center text-[11px] text-slate-400">
+        💡 상사나 내방객이 다가올 때는 언제든지 키보드의 <kbd class="px-1.5 py-0.5 bg-slate-200 text-slate-800 rounded font-mono text-[10px]">Esc</kbd>를 누르면 즉시 엑셀 보고서로 위장됩니다.
+      </p>
+    </section>
+
+    <!-- 2. MODULE 1: SPEED 특장 매칭 (CARD SWIPE) -->
+    <section id="screen-module1" class="hidden flex-1 flex flex-col max-w-xl w-full mx-auto justify-between py-2">
+      <!-- Module 1 Header -->
+      <div class="card p-3 mb-2 flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold text-blue-700 uppercase tracking-wider block">MODULE 01 · 섀시/특장 매칭</span>
+          <h2 class="text-sm font-extrabold text-slate-900">고객 최적 섀시를 선택하세요!</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 block">진행 상황</span>
+            <span class="text-xs font-black text-slate-700"><span id="swipe-current-idx">1</span> / 8</span>
+          </div>
+          <div class="text-right pl-2 border-l border-slate-200">
+            <span class="text-[10px] text-slate-400 block">콤보</span>
+            <span id="swipe-combo" class="text-xs font-black text-amber-600">0 COMBO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drag & Swipe Container -->
+      <div class="relative flex-1 min-h-[360px] max-h-[460px] w-full my-auto flex items-center justify-center">
+        <!-- Visual swipe guide labels -->
+        <div class="absolute -top-1 left-2 text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 z-0">
+          👈 왼쪽 슬라이드: 중형(구쎈)
+        </div>
+        <div class="absolute -top-1 right-2 text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 z-0">
+          오른쪽 슬라이드: 대형(맥쎈) 👉
+        </div>
+
+        <!-- Dynamic Card Mount -->
+        <div id="swipe-card-stack" class="relative w-full h-full max-w-md"></div>
+      </div>
+
+      <!-- Quick Action Buttons (Touch/Mouse Direct Action) -->
+      <div class="mt-3 card p-2.5">
+        <div class="text-center text-[11px] text-slate-400 mb-2 font-medium">카드를 직접 드래그하거나 아래 버튼을 클릭하여 매칭하세요</div>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button onclick="handleTargetSelection('더쎈')" class="py-2.5 px-1 rounded-lg border border-sky-300 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-black transition active:scale-95 flex flex-col items-center">
+            <span class="text-base mb-0.5">🚚</span>
+            <span>더쎈</span>
+            <span class="text-[9px] text-sky-600 font-normal">준중형 3~5T</span>
+          </button>
+          <button onclick="handleTargetSelection('구쎈')" class="py-2.5 px-1 rounded-lg border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-black transition active:scale-95 flex flex-col items-center">
+            <span class="text-base mb-0.5">🚛</span>
+            <span>구쎈</span>
+            <span class="text-[9px] text-blue-600 font-normal">중형 4.5~8.5T</span>
+          </button>
+          <button onclick="handleTargetSelection('맥쎈')" class="py-2.5 px-1 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-black transition active:scale-95 flex flex-col items-center">
+            <span class="text-base mb-0.5">🏗️</span>
+            <span>맥쎈</span>
+            <span class="text-[9px] text-amber-600 font-normal">대형 9.5~25.5T</span>
+          </button>
+          <button onclick="handleTargetSelection('노부스')" class="py-2.5 px-1 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-black transition active:scale-95 flex flex-col items-center">
+            <span class="text-base mb-0.5">🚜</span>
+            <span>노부스</span>
+            <span class="text-[9px] text-emerald-600 font-normal">실속·특수형</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MODULE 2: SPEED QUIZ (MC22 KNOWLEDGE) -->
+    <section id="screen-module2" class="hidden flex-1 flex flex-col max-w-xl w-full mx-auto justify-between py-2">
+      <!-- Quiz Header -->
+      <div class="card p-3 mb-2 space-y-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block">MODULE 02 · MC22 상품 스펙 퀴즈</span>
+            <h2 class="text-sm font-extrabold text-slate-900">제한시간 내 정답을 고르세요!</h2>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 block">문항</span>
+            <span class="text-xs font-black text-slate-700"><span id="quiz-current-num">1</span> / 7</span>
+          </div>
+        </div>
+
+        <!-- Question Timer Bar -->
+        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+          <div id="quiz-timer-bar" class="h-full bg-blue-600 transition-all duration-100 ease-linear" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Quiz Body Card -->
+      <div class="card p-4 sm:p-6 flex-1 flex flex-col justify-between my-2 relative overflow-hidden">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span id="quiz-category-badge" class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+              파워트레인
+            </span>
+            <span id="quiz-timer-seconds" class="text-xs font-bold text-slate-400 tabular-nums">15s</span>
+          </div>
+          <h3 id="quiz-question-text" class="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+            문제를 불러오는 중입니다...
+          </h3>
+        </div>
+
+        <!-- Options Container -->
+        <div id="quiz-options-container" class="space-y-2 my-4"></div>
+
+        <!-- Explanation Overlay -->
+        <div id="quiz-feedback-box" class="hidden p-3 rounded-xl border text-xs leading-relaxed animate-pop"></div>
+      </div>
+
+      <!-- Bottom Next / Continue Button -->
+      <button id="quiz-next-btn" onclick="nextQuizQuestion()" disabled
+        class="w-full py-3 rounded-xl bg-slate-300 text-slate-500 font-extrabold text-sm transition cursor-not-allowed">
+        다음 문제
+      </button>
+    </section>
+
+    <!-- 4. FINAL RESULT & CERTIFICATION SCREEN -->
+    <section id="screen-result" class="hidden m-auto max-w-xl w-full card p-5 sm:p-7 space-y-5 animate-pop">
+      <div class="text-center space-y-1">
+        <div id="result-trophy" class="text-5xl">🏆</div>
+        <span class="text-xs font-bold text-blue-700 tracking-wider block">EVALUATION REPORT</span>
+        <h2 class="text-2xl font-extrabold text-slate-900">타타대우 세일즈 역량 평가 결과</h2>
+      </div>
+
+      <!-- Certified Certificate Preview Box -->
+      <div class="border-4 border-double border-slate-300 rounded-2xl p-5 bg-gradient-to-b from-white to-slate-50 relative shadow-inner">
+        <div class="text-center border-b border-slate-200 pb-3 mb-4">
+          <span class="text-[11px] font-bold text-slate-400">TATA DAEWOO MOBILITY SALES ACADEMY</span>
+          <h3 class="text-lg font-black text-slate-800 mt-0.5">공식 세일즈 마스터 인증서</h3>
+          <p class="text-[11px] text-slate-500">본 인증서는 타타대우 상용차 전 라인업에 대한 전문 역량을 인증함</p>
+        </div>
+
+        <div class="flex items-center justify-between px-2 mb-4">
+          <div>
+            <span class="text-[11px] text-slate-400 block">성명 / 소속</span>
+            <strong id="cert-user-name" class="text-sm font-bold text-slate-800">김정환 / 군산직판</strong>
+          </div>
+          <div class="text-right">
+            <span class="text-[11px] text-slate-400 block">최종 부여 등급</span>
+            <div id="cert-badge" class="inline-block px-3 py-1 rounded-full font-black text-xs bg-amber-100 text-amber-800 border border-amber-300">
+              골드 마스터 (상위 10%)
+            </div>
+          </div>
+        </div>
+
+        <!-- Score Breakdown Meters -->
+        <div class="space-y-2.5 bg-white p-3 rounded-xl border border-slate-200 text-xs">
+          <div>
+            <div class="flex justify-between text-slate-600 mb-1">
+              <span>🏗️ 섀시 및 특장 최적 매칭력</span>
+              <b id="score-bar-swipe-text">0 / 80점</b>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div id="score-bar-swipe" class="bg-blue-600 h-full rounded-full transition-all duration-700" style="width: 0%;"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-600 mb-1">
+              <span>🎯 MC22 상품 및 법규 지식도</span>
+              <b id="score-bar-quiz-text">0 / 70점</b>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div id="score-bar-quiz" class="bg-emerald-600 h-full rounded-full transition-all duration-700" style="width: 0%;"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-600 mb-1">
+              <span>⚡ 영업 순발력 및 종합 스코어</span>
+              <b id="score-total-text" class="text-blue-700 text-sm font-black">0점 / 150점</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grade Benefit Preview -->
+        <div id="cert-benefit-box" class="mt-3 p-3 rounded-lg bg-blue-50/70 border border-blue-200 text-[11px] text-slate-700 leading-relaxed"></div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="restartChallenge()" 
+          class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm transition shadow">
+          🔄 재도전하여 등급 올리기
+        </button>
+        <button onclick="sideMenu('포상')" 
+          class="px-4 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs transition">
+          🎁 혜택 확인
+        </button>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- PANIC KEY (ESC) EXCEL CAMOUFLAGE OVERLAY -->
+<div id="panic-overlay" class="fixed inset-0 bg-[#1e1e1e] z-50 hidden flex flex-col text-xs text-gray-300 font-sans">
+  <div class="bg-[#2d2d2d] border-b border-gray-700 px-3 py-1.5 flex items-center justify-between">
+    <span class="font-bold text-gray-200">Microsoft Excel - TATA_DAEWOO_MOBILITY_Commercial_Vehicle_Q4_Performance.xlsx [읽기 전용]</span>
+    <button onclick="togglePanicMode()" class="bg-gray-700 hover:bg-gray-600 text-white px-2.5 py-0.5 rounded text-[11px]">업무 복귀</button>
+  </div>
+  <div class="bg-[#f3f3f3] text-black border-b border-gray-300 px-2 py-1 flex space-x-4 text-[11px]">
+    <b>파일(F)</b><b>홈(H)</b><b>삽입(I)</b><b>수식(M)</b><b>데이터(D)</b><b>검토(R)</b><b>보기(W)</b>
+  </div>
+  <div class="bg-white text-black flex-1 p-4 overflow-auto">
+    <div class="mb-2 text-xs font-bold text-slate-700">▶ 2026 4분기 상용차 본부별 계약 진척도 및 라인업 단가 테이블</div>
+    <table class="w-full border-collapse border border-gray-300 text-xs">
+      <thead>
+        <tr class="bg-gray-100 text-slate-800">
+          <th class="border border-gray-300 p-1.5 text-left">차종 라인업</th>
+          <th class="border border-gray-300 p-1.5">권장소비자가(가이드)</th>
+          <th class="border border-gray-300 p-1.5">실행 기준가</th>
+          <th class="border border-gray-300 p-1.5">계약 달성률</th>
+          <th class="border border-gray-300 p-1.5">주요 특장 사양</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border border-gray-300 p-1.5 font-bold">MAXEN (맥쎈) 대형 트럭</td>
+          <td class="border border-gray-300 p-1.5 text-right">₩185,000,000</td>
+          <td class="border border-gray-300 p-1.5 text-right">₩182,000,000</td>
+          <td class="border border-gray-300 p-1.5 text-center text-green-700 font-bold">104.2%</td>
+          <td class="border border-gray-300 p-1.5">25.5T 덤프 / 10x4 암롤 / 트랙터</td>
+        </tr>
+        <tr>
+          <td class="border border-gray-300 p-1.5 font-bold">KUXEN (구쎈) 중형 트럭</td>
+          <td class="border border-gray-300 p-1.5 text-right">₩160,000,000</td>
+          <td class="border border-gray-300 p-1.5 text-right">₩158,500,000</td>
+          <td class="border border-gray-300 p-1.5 text-center text-blue-700 font-bold">98.5%</td>
+          <td class="border border-gray-300 p-1.5">식자재 윙바디 / 집게차 / 카고</td>
+        </tr>
+        <tr>
+          <td class="border border-gray-300 p-1.5 font-bold">DEXEN (더쎈) 준중형 트럭</td>
+          <td class="border border-gray-300 p-1.5 text-right">₩85,000,000</td>
+          <td class="border border-gray-300 p-1.5 text-right">₩83,000,000</td>
+          <td class="border border-gray-300 p-1.5 text-center text-amber-700 font-bold">91.8%</td>
+          <td class="border border-gray-300 p-1.5">냉동탑차 / 도심 배송 4톤 카고</td>
+        </tr>
+        <tr>
+          <td class="border border-gray-300 p-1.5 font-bold">NOVUS (노부스) 실속형 라인</td>
+          <td class="border border-gray-300 p-1.5 text-right">₩120,000,000</td>
+          <td class="border border-gray-300 p-1.5 text-right">₩118,000,000</td>
+          <td class="border border-gray-300 p-1.5 text-center text-green-700 font-bold">112.0%</td>
+          <td class="border border-gray-300 p-1.5">15T 덤프 / 6㎥ 레미콘 믹서</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- COMMON MODAL -->
+<div id="custom-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white border border-tata-border rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center space-y-3">
+    <div id="modal-icon" class="text-3xl">📢</div>
+    <h3 id="modal-title" class="text-sm font-bold text-slate-800">알림</h3>
+    <p id="modal-message" class="text-xs text-slate-600 whitespace-pre-line leading-relaxed"></p>
+    <button onclick="closeModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-xs font-bold transition">
+      확인
+    </button>
+  </div>
+</div>
+
+<script>
+// --- AUDIO SYNTHESIS ENGINE (Web Audio API) ---
+let audioCtx = null;
+function getAudioContext() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playTone(freq, duration, type = 'sine', gainVal = 0.08) {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(gainVal, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  } catch (e) { console.warn('Audio not allowed yet', e); }
+}
+function sndSuccess() {
+  playTone(523.25, 0.12, 'triangle'); // C5
+  setTimeout(() => playTone(659.25, 0.18, 'triangle'), 80); // E5
+}
+function sndError() {
+  playTone(220, 0.18, 'sawtooth', 0.09);
+  setTimeout(() => playTone(180, 0.22, 'sawtooth', 0.09), 100);
+}
+function sndCombo() {
+  playTone(587.33, 0.08, 'sine');
+  setTimeout(() => playTone(880, 0.15, 'sine'), 60);
+}
+function sndFinish() {
+  playTone(440, 0.1, 'triangle');
+  setTimeout(() => playTone(554.37, 0.1, 'triangle'), 100);
+  setTimeout(() => playTone(659.25, 0.2, 'triangle'), 200);
+  setTimeout(() => playTone(880, 0.4, 'triangle'), 320);
+}
+
+// --- DATASETS ---
+// Module 1: 특장 및 고객 페르소나 매칭 시나리오
+const SWIPE_SCENARIOS = [
+  {
+    id: 1,
+    title: "강원도 석산 골재 및 토사 운반",
+    client: "토목 건설사 대표",
+    request: "험로 광산과 건설현장에서 25.5톤 적재량을 거뜬히 버티고, 570마력급의 강력한 엔진과 험지용 내구성 프레임이 필수입니다.",
+    correct: "맥쎈",
+    tag: "대형 덤프 / 고마력",
+    desc: "25.5톤 덤프 및 중하중 고출력 현장에는 FPT C13(최대 570ps)과 프레임 분체 도장이 적용된 맥쎈(MAXEN)이 정답입니다."
+  },
+  {
+    id: 2,
+    title: "새벽 도심 마트 및 식자재 배송",
+    client: "신선식품 유통업체 물류팀",
+    request: "골목길 및 지하주차장 진입이 잦고, 3.5톤~4톤 냉동탑 적재함에 ZF 8단 전자동 변속기로 운전 피로도가 적어야 합니다.",
+    correct: "더쎈",
+    tag: "준중형 / 도심 물류",
+    desc: "도심 배송 및 기동성이 중요한 3~5톤급에는 ZF 8단 자동화 변속기와 에어서스펜션 시트가 강점인 더쎈(DEXEN)이 최적입니다."
+  },
+  {
+    id: 3,
+    title: "수도권-영남권 장거리 일반 화물 지입",
+    client: "4.5톤~8.5톤 윙바디 개인 차주",
+    request: "유류비 절감이 최우선이며, 9.1m 이상 롱데크에 파워풀한 커민스 315마력 엔진과 승차감 좋은 2-Bag 에어서스펜션이 필요합니다.",
+    correct: "구쎈",
+    tag: "중형 윙바디 / 고하중",
+    desc: "고하중 수송용 커민스 ISB70(315ps/122kgf·m) 및 9.1m 데크 에어서스펜션을 지원하는 중형 주력 모델은 구쎈(KUXEN)입니다."
+  },
+  {
+    id: 4,
+    title: "수도권 레미콘 타설 전문 지입단",
+    client: "레미콘 운송 차주회",
+    request: "6㎥ 믹서 특장을 올릴 예정이며, 화려한 전자옵션보다는 잔고장 없고 구매 단가와 유지보수 비용이 가장 합리적이어야 합니다.",
+    correct: "노부스",
+    tag: "실속형 / 믹서 특장",
+    desc: "가격 민감도가 높고 험지 작업 내구성이 핵심인 15T 덤프 및 6㎥ 레미콘 믹서 시장은 노부스(NOVUS)가 압도적 가성비를 제공합니다."
+  },
+  {
+    id: 5,
+    title: "항만 컨테이너 및 BCT 벌크 트레일러 수송",
+    client: "장거리 컨테이너 운송사",
+    request: "6x2 트랙터 섀시에 스마트키, 12인치 디지털 클러스터, ISRI 명품 에어서스펜션 시트, X-Link 관제 5년 무상이 필수입니다.",
+    correct: "맥쎈",
+    tag: "대형 트랙터 / 프리미엄",
+    desc: "장거리 트랙터 운전자의 피로 해소와 안전 법규(AEB, ACC, LDWS)를 최고급 사양으로 만족시키는 플래그십은 맥쎈(MAXEN)입니다."
+  },
+  {
+    id: 6,
+    title: "도심 재활용품 수거 및 골목형 압축 진개차",
+    client: "구청 청소대행 위탁업체",
+    request: "5톤 미만의 컴팩트한 차체에 내구성이 검증되고, 잦은 정차와 출발에도 변속 충격이 없는 풀오토 미션 특장차가 필요합니다.",
+    correct: "더쎈",
+    tag: "도심 공공특장 / 준중형",
+    desc: "도심 청소차 및 기동성 특장에는 좁은 회전반경과 전자동 미션을 지원하는 준중형 더쎈(DEXEN)이 적합합니다."
+  },
+  {
+    id: 7,
+    title: "중량물 적재 및 중형 카고 크레인 특장",
+    client: "특수 크레인 설치 제작사",
+    request: "캡 뒤에 아웃트리거 장착 공간이 넓게 나오는 덕트 일체형 에어클리너(CE3)와 8.1톤 고하중 전축 액슬이 들어가는 모델을 찾습니다.",
+    correct: "구쎈",
+    tag: "중형 특수 크레인",
+    desc: "크레인 장착 레이아웃을 위해 덕트 일체형 에어클리너 옵션과 전축 고하중 액슬을 폭넓게 제공하는 구쎈(KUXEN)이 안성맞춤입니다."
+  },
+  {
+    id: 8,
+    title: "지방 국도 15톤 토사 운반 및 덤프",
+    client: "개인 덤프 사업자",
+    request: "초기 할부금 부담을 최소화해야 하며, 공압식 덤핑 컨트롤과 기본기가 튼튼한 직관적인 6x4 15톤 덤프 섀시여야 합니다.",
+    correct: "노부스",
+    tag: "실속 15톤 덤프",
+    desc: "15톤 덤프 부문에서 경제성과 단순하고 강인한 메커니즘으로 꾸준한 사랑을 받는 스테디셀러는 노부스(NOVUS)입니다."
+  }
+];
+
+// Module 2: MC22 상품성 및 영업사원 헷갈림 방지 퀴즈 (7문항 선별)
+const QUIZ_QUESTIONS = [
+  {
+    id: 1,
+    category: "파워트레인",
+    question: "MC22로 변경되면서 신규 추가된 커민스(Cummins) ISB70 엔진의 최고출력과 최대토크는?",
+    options: ["280ps / 102kgf·m", "315ps / 122kgf·m", "320ps / 112kgf·m", "360ps / 168kgf·m"],
+    answer: 1,
+    desc: "커민스 ISB70 엔진은 315마력, 122토크의 강력한 힘으로 고하중 중형 수송용(구쎈)에 신규 투입되었습니다."
+  },
+  {
+    id: 2,
+    category: "공기압·제동",
+    question: "공기처리장치(APU) 및 샤시 에어건 시스템에 대한 설명 중 올바른 것은?",
+    options: [
+      "ABS 차종은 C-APU(10.8bar), EBS 차종은 E-APU(12.3bar)가 적용된다.",
+      "에어건은 전 차종 모두 캡 실내에만 1개 설치된다.",
+      "노부스에는 APU가 전면 제외된다.",
+      "대형 트랙터는 C-APU를 우선 기본 적용한다."
+    ],
+    answer: 0,
+    desc: "ABS 차종은 기계식 C-APU, 대형 EBS 차종은 전자식 E-APU가 적용되며, 샤시 에어건 포트가 외부에 기본 지원됩니다."
+  },
+  {
+    id: 3,
+    category: "섀시·주행성",
+    question: "프리마 전2축(8x4, 10x4) 카고 차량의 승차감 및 주행안정성 개선을 위한 축 위치 변경점은?",
+    options: [
+      "전 1축과 전 2축을 전방으로 300mm 이동",
+      "전 1축과 전 2축을 후방으로 200mm 이동",
+      "전 2축만 가변형으로 전방 50mm 이동",
+      "축 위치 변경 없음"
+    ],
+    answer: 0,
+    desc: "캡 위치와 전축 서스펜션 위치를 근접시켜 승차감과 외관을 개선하기 위해 전 1축·2축을 전방으로 300mm 이동시켰습니다."
+  },
+  {
+    id: 4,
+    category: "내구성·도장",
+    question: "MC22 프레임의 부식 및 변색을 방지하기 위해 전 차종에 적용된 하부 도장 사양은?",
+    options: [
+      "전착 도장(ED) 위에 블랙 반광 분체 도장(Powder Coating) 추가 적용",
+      "우레탄 단독 1회 도장",
+      "아연 도금 강판 무도장 출고",
+      "에폭시 하도 프라이머 단독 시공"
+    ],
+    answer: 0,
+    desc: "ED 도장 위에 80±10μm 두께의 파우더 코팅을 추가하여 염수분무 720시간 테스트를 통과하는 내후성을 확보했습니다."
+  },
+  {
+    id: 5,
+    category: "편의·옵션",
+    question: "스마트키(Smart Key, AU1) 시스템의 적용 범위로 올바른 것은?",
+    options: [
+      "프리마(맥쎈/구쎈) 전 차종 트림 무관 기본 적용",
+      "노부스를 포함한 모든 차종 기본 적용",
+      "대형 로얄 트림에서만 유상 옵션 선택 가능",
+      "트랙터 모델에만 한정 적용"
+    ],
+    answer: 0,
+    desc: "스마트키 시스템은 트림과 관계없이 프리마(맥쎈/구쎈) 전 차종에 기본 장착(AU1)됩니다."
+  },
+  {
+    id: 6,
+    category: "적재함 운영",
+    question: "MC22 카고 적재함 공급 방식 및 게이트 변경 사항으로 올바른 것은?",
+    options: [
+      "완성차 기본 공급 유지 및 나무 게이트 확대",
+      "미완성차(샤시캡) 기본 공급으로 변경되며, 나무 게이트(EU6)는 공식 단종",
+      "모든 카고에 알루미늄 게이트 기본화",
+      "스틸 적재함만 출고 가능"
+    ],
+    answer: 1,
+    desc: "운영 효율성 향상을 위해 미완성차 기본 공급으로 전환되었으며, 기존 나무 게이트(EU6)는 공식 단종되었습니다."
+  },
+  {
+    id: 7,
+    category: "시트·안락성",
+    question: "독일 명품 ISRI(이스리) 운전석 시트의 적용 기준으로 올바른 것은?",
+    options: [
+      "프리마 대형(맥쎈) 로얄 트림 기본 적용 (중형급 엔진 제외)",
+      "전 차종 유상 옵션으로만 선택 가능",
+      "노부스 덤프/믹서에 기본화",
+      "조수석에만 기본 적용"
+    ],
+    answer: 0,
+    desc: "독일 ISRI 시트는 맥쎈 대형 로얄 트림에 기본 적용되며, 장거리 운전자의 피로도를 대폭 낮춰줍니다."
+  }
+];
+
+// --- APP STATE ---
+let userName = "김정환 SR";
+let currentModule = 0; // 0: intro, 1: swipe, 2: quiz, 3: result
+let totalSecondsLeft = 300; // 5분
+let mainTimerInterval = null;
+
+// Module 1 State
+let swipeIdx = 0;
+let swipeScore = 0;
+let swipeCombo = 0;
+let currentCardEl = null;
+
+// Module 2 State
+let quizIdx = 0;
+let quizScore = 0;
+let quizTimerVal = 15;
+let quizTimerInterval = null;
+let quizAnswered = false;
+
+// --- INITIALIZATION ---
+window.addEventListener('DOMContentLoaded', () => {
+  renderSwipeCard();
+});
+
+// Panic Key toggle
+window.togglePanicMode = function() {
+  document.getElementById('panic-overlay').classList.toggle('hidden');
+};
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') togglePanicMode();
+});
+
+// Modal helpers
+function showModal(title, msg, icon = "📢") {
+  document.getElementById('modal-title').innerText = title;
+  document.getElementById('modal-message').innerText = msg;
+  document.getElementById('modal-icon').innerText = icon;
+  document.getElementById('custom-modal').classList.remove('hidden');
+}
+window.closeModal = function() {
+  document.getElementById('custom-modal').classList.add('hidden');
+};
+window.sideMenu = function(menu) {
+  const messages = {
+    '결재': "전자결재 대기 문서 0건!\n지금은 챌린지 훈련을 통해 등급을 획득할 시간입니다. 📝",
+    '견적': "라인업 섀시 견적 계산기:\n더쎈·구쎈·맥쎈·노부스 맞춤 견적은 마스터 인증 완료 후 우선 출고 쿼터가 주어집니다. 🚛",
+    '특장': "타타대우 특장 지원 포털:\n윙바디, 암롤, 덤프, 믹서 섀시 도면 가이드북을 다운로드할 수 있습니다. 🏗️",
+    '포상': "🏆 세일즈 마스터 혜택 안내\n• 골드 마스터 (상위 10%): 신차 사전 물량 우선 배정권, 판촉비 추가 지원, 명함 공식 인증 엠블럼 표기\n• 실버 마스터 (상위 30%): 본사 시승차량 우선 배정권 및 판촉물 지원",
+    '규정': "총 5분 동안 2개 모듈(특장 매칭 + MC22 퀴즈)을 진행하며, 120점 이상 획득 시 '골드 마스터'가 부여됩니다."
+  };
+  showModal(menu, messages[menu] || "안내 내용이 없습니다.");
+};
+
+// --- GAME FLOW CONTROLLER ---
+function setScreen(screenName) {
+  ['intro', 'module1', 'module2', 'result'].forEach(s => {
+    document.getElementById(`screen-${s}`).classList.toggle('hidden', s !== screenName);
+  });
+}
+
+window.startChallenge = function() {
+  getAudioContext();
+  const inputName = document.getElementById('input-sr-name').value.trim();
+  if (inputName) userName = inputName;
+  document.getElementById('header-user-display').innerText = userName;
+
+  swipeIdx = 0;
+  swipeScore = 0;
+  swipeCombo = 0;
+  quizIdx = 0;
+  quizScore = 0;
+  totalSecondsLeft = 300;
+
+  document.getElementById('header-grade-tag').className = "text-[10px] px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 font-bold border border-blue-300";
+  document.getElementById('header-grade-tag').innerText = "평가 진행 중";
+
+  // Start Global Timer
+  clearInterval(mainTimerInterval);
+  mainTimerInterval = setInterval(() => {
+    totalSecondsLeft--;
+    if (totalSecondsLeft <= 0) {
+      clearInterval(mainTimerInterval);
+      finishChallenge();
+    }
+    const m = String(Math.floor(totalSecondsLeft / 60)).padStart(2, '0');
+    const s = String(totalSecondsLeft % 60).padStart(2, '0');
+    document.getElementById('game-clock').innerText = `${m}:${s}`;
+  }, 1000);
+
+  setScreen('module1');
+  renderSwipeCard();
+  sndSuccess();
+};
+
+// --- MODULE 1: SWIPE CARD ENGINE ---
+function renderSwipeCard() {
+  const stack = document.getElementById('swipe-card-stack');
+  stack.innerHTML = '';
+  document.getElementById('swipe-current-idx').innerText = (swipeIdx + 1);
+  document.getElementById('swipe-combo').innerText = `${swipeCombo} COMBO`;
+
+  if (swipeIdx >= SWIPE_SCENARIOS.length) {
+    // Transition to Module 2
+    sndFinish();
+    showModal("모듈 1 완료!", `특장 매칭 평가를 마쳤습니다!\n획득 점수: ${swipeScore}점 / 80점\n\n이어서 '모듈 2: MC22 상품 스펙 퀴즈'로 돌입합니다.`, "🎯");
+    setTimeout(() => {
+      closeModal();
+      startQuizModule();
+    }, 1800);
+    return;
+  }
+
+  const data = SWIPE_SCENARIOS[swipeIdx];
+  const card = document.createElement('div');
+  card.className = "swipe-card card p-5 flex flex-col justify-between cursor-grab active:cursor-grabbing border-2 border-slate-200 select-none shadow-md bg-white";
+  card.innerHTML = `
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200">
+          ${data.tag}
+        </span>
+        <span class="text-xs text-slate-400 font-bold">CASE #${data.id}</span>
+      </div>
+      <h3 class="text-base sm:text-lg font-extrabold text-slate-900 mb-1">${data.title}</h3>
+      <div class="inline-flex items-center text-xs text-slate-500 font-medium mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>
+        고객: <strong>${data.client}</strong>
+      </div>
+      <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-700 leading-relaxed italic">
+        "${data.request}"
+      </div>
+    </div>
+
+    <div>
+      <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
+        <span>💡 더쎈 / 구쎈 / 맥쎈 / 노부스</span>
+        <span class="text-blue-600 font-bold">스와이프 또는 버튼 매칭</span>
+      </div>
+    </div>
+  `;
+
+  stack.appendChild(card);
+  currentCardEl = card;
+  setupDraggable(card, data);
+}
+
+// Touch & Mouse Drag Implementation
+function setupDraggable(el, data) {
+  let startX = 0, startY = 0, currentX = 0, currentY = 0;
+  let isDragging = false;
+
+  const onStart = (x, y) => {
+    isDragging = true;
+    startX = x;
+    startY = y;
+    el.classList.add('dragging');
+  };
+
+  const onMove = (x, y) => {
+    if (!isDragging) return;
+    currentX = x - startX;
+    currentY = y - startY;
+    const rotate = currentX * 0.08;
+    el.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) rotate(${rotate}deg)`;
+
+    // Visual tint hints based on swipe direction
+    if (currentX > 50) {
+      el.style.borderColor = '#f59e0b'; // Amber (Right -> 맥쎈)
+    } else if (currentX < -50) {
+      el.style.borderColor = '#2563eb'; // Blue (Left -> 구쎈)
+    } else {
+      el.style.borderColor = '#e2e8f0';
+    }
+  };
+
+  const onEnd = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    el.classList.remove('dragging');
+
+    // Threshold check (110px)
+    if (currentX > 110) {
+      // Right Swipe -> 맥쎈
+      animateCardAway(el, 500, 0, () => checkMatch('맥쎈', data));
+    } else if (currentX < -110) {
+      // Left Swipe -> 구쎈
+      animateCardAway(el, -500, 0, () => checkMatch('구쎈', data));
+    } else {
+      // Spring back
+      el.style.transform = 'translate3d(0, 0, 0) rotate(0deg)';
+      el.style.borderColor = '#e2e8f0';
+    }
+  };
+
+  // Touch Events
+  el.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  el.addEventListener('touchmove', e => onMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  el.addEventListener('touchend', onEnd);
+
+  // Mouse Events
+  el.addEventListener('mousedown', e => {
+    onStart(e.clientX, e.clientY);
+    const mouseMove = ev => onMove(ev.clientX, ev.clientY);
+    const mouseUp = () => {
+      onEnd();
+      window.removeEventListener('mousemove', mouseMove);
+      window.removeEventListener('mouseup', mouseUp);
+    };
+    window.addEventListener('mousemove', mouseMove);
+    window.addEventListener('mouseup', mouseUp);
+  });
+}
+
+function animateCardAway(el, targetX, targetY, callback) {
+  el.style.transition = 'transform 0.28s ease-out, opacity 0.25s ease-out';
+  el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0) rotate(${targetX * 0.05}deg)`;
+  el.style.opacity = '0';
+  setTimeout(callback, 220);
+}
+
+window.handleTargetSelection = function(choice) {
+  if (!currentCardEl || swipeIdx >= SWIPE_SCENARIOS.length) return;
+  const data = SWIPE_SCENARIOS[swipeIdx];
+  const dir = choice === '맥쎈' ? 450 : choice === '구쎈' ? -450 : 0;
+  const dirY = choice === '더쎈' ? -350 : choice === '노부스' ? 350 : 0;
+  animateCardAway(currentCardEl, dir, dirY, () => checkMatch(choice, data));
+};
+
+function checkMatch(choice, data) {
+  const isCorrect = (choice === data.correct);
+  if (isCorrect) {
+    swipeCombo++;
+    const bonus = swipeCombo > 2 ? 12 : 10;
+    swipeScore += bonus;
+    sndSuccess();
+    if (swipeCombo > 1) sndCombo();
+  } else {
+    swipeCombo = 0;
+    sndError();
+  }
+
+  swipeIdx++;
+  renderSwipeCard();
+}
+
+// --- MODULE 2: SPEED QUIZ ENGINE ---
+function startQuizModule() {
+  setScreen('module2');
+  quizIdx = 0;
+  quizScore = 0;
+  loadQuizQuestion();
+}
+
+function loadQuizQuestion() {
+  if (quizIdx >= QUIZ_QUESTIONS.length) {
+    clearInterval(quizTimerInterval);
+    sndFinish();
+    finishChallenge();
+    return;
+  }
+
+  quizAnswered = false;
+  quizTimerVal = 15;
+  const q = QUIZ_QUESTIONS[quizIdx];
+
+  document.getElementById('quiz-current-num').innerText = (quizIdx + 1);
+  document.getElementById('quiz-category-badge').innerText = q.category;
+  document.getElementById('quiz-question-text').innerText = q.question;
+  document.getElementById('quiz-timer-seconds').innerText = '15s';
+  document.getElementById('quiz-timer-bar').style.width = '100%';
+  document.getElementById('quiz-timer-bar').className = "h-full bg-blue-600 transition-all duration-100 ease-linear";
+
+  const nextBtn = document.getElementById('quiz-next-btn');
+  nextBtn.disabled = true;
+  nextBtn.className = "w-full py-3 rounded-xl bg-slate-300 text-slate-500 font-extrabold text-sm transition cursor-not-allowed";
+
+  const feedbackBox = document.getElementById('quiz-feedback-box');
+  feedbackBox.classList.add('hidden');
+  feedbackBox.className = "hidden p-3 rounded-xl border text-xs leading-relaxed animate-pop";
+
+  // Render Options
+  const container = document.getElementById('quiz-options-container');
+  container.innerHTML = '';
+  q.options.forEach((optText, optIdx) => {
+    const btn = document.createElement('button');
+    btn.className = "w-full text-left p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.99] text-xs sm:text-sm font-semibold text-slate-700 transition flex items-center justify-between";
+    btn.innerHTML = `
+      <span class="flex items-center gap-2">
+        <span class="w-6 h-6 rounded-full bg-slate-100 border border-slate-300 text-[11px] font-bold flex items-center justify-center shrink-0">
+          ${optIdx + 1}
+        </span>
+        <span>${optText}</span>
+      </span>
+      <span id="opt-icon-${optIdx}" class="text-sm"></span>
+    `;
+    btn.onclick = () => selectQuizAnswer(optIdx, btn);
+    container.appendChild(btn);
+  });
+
+  // Start 15s Timer
+  clearInterval(quizTimerInterval);
+  const startTime = Date.now();
+  quizTimerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const remaining = Math.max(0, 15 - elapsed);
+    const percent = (remaining / 15) * 100;
+    
+    document.getElementById('quiz-timer-bar').style.width = `${percent}%`;
+    document.getElementById('quiz-timer-seconds').innerText = `${Math.ceil(remaining)}s`;
+
+    if (remaining <= 5) {
+      document.getElementById('quiz-timer-bar').className = "h-full bg-red-600 transition-all duration-100 ease-linear";
+    }
+
+    if (remaining <= 0) {
+      clearInterval(quizTimerInterval);
+      if (!quizAnswered) handleQuizTimeout();
+    }
+  }, 100);
+}
+
+function selectQuizAnswer(selectedIdx, btnEl) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  clearInterval(quizTimerInterval);
+
+  const q = QUIZ_QUESTIONS[quizIdx];
+  const isCorrect = (selectedIdx === q.answer);
+  const container = document.getElementById('quiz-options-container');
+  const allBtns = container.querySelectorAll('button');
+
+  allBtns.forEach((b, idx) => {
+    b.disabled = true;
+    b.classList.remove('hover:bg-slate-50', 'active:scale-[0.99]');
+    if (idx === q.answer) {
+      b.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+      b.querySelector(`#opt-icon-${idx}`).innerText = '✅';
+    } else if (idx === selectedIdx && !isCorrect) {
+      b.classList.add('bg-red-50', 'border-red-400', 'text-red-700');
+      b.querySelector(`#opt-icon-${idx}`).innerText = '❌';
+    }
+  });
+
+  const feedbackBox = document.getElementById('quiz-feedback-box');
+  if (isCorrect) {
+    quizScore += 10;
+    sndSuccess();
+    feedbackBox.className = "p-3 rounded-xl border border-green-200 bg-green-50 text-green-800 text-xs leading-relaxed animate-pop";
+    feedbackBox.innerHTML = `<b>🎉 정답입니다!</b><br>${q.desc}`;
+  } else {
+    sndError();
+    feedbackBox.className = "p-3 rounded-xl border border-red-200 bg-red-50 text-red-800 text-xs leading-relaxed animate-pop";
+    feedbackBox.innerHTML = `<b>❌ 오답입니다. (정답: ${q.answer + 1}번)</b><br>${q.desc}`;
+  }
+  feedbackBox.classList.remove('hidden');
+
+  const nextBtn = document.getElementById('quiz-next-btn');
+  nextBtn.disabled = false;
+  nextBtn.className = "w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm transition shadow cursor-pointer";
+}
+
+function handleQuizTimeout() {
+  quizAnswered = true;
+  sndError();
+  const q = QUIZ_QUESTIONS[quizIdx];
+  const container = document.getElementById('quiz-options-container');
+  const allBtns = container.querySelectorAll('button');
+  allBtns.forEach((b, idx) => {
+    b.disabled = true;
+    if (idx === q.answer) {
+      b.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+      b.querySelector(`#opt-icon-${idx}`).innerText = '✅ 정답';
+    }
+  });
+
+  const feedbackBox = document.getElementById('quiz-feedback-box');
+  feedbackBox.className = "p-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-xs leading-relaxed animate-pop";
+  feedbackBox.innerHTML = `<b>⏰ 시간 초과!</b><br>${q.desc}`;
+  feedbackBox.classList.remove('hidden');
+
+  const nextBtn = document.getElementById('quiz-next-btn');
+  nextBtn.disabled = false;
+  nextBtn.className = "w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm transition shadow cursor-pointer";
+}
+
+window.nextQuizQuestion = function() {
+  quizIdx++;
+  loadQuizQuestion();
+};
+
+// --- FINISH & CERTIFICATION SCREEN ---
+function finishChallenge() {
+  clearInterval(mainTimerInterval);
+  clearInterval(quizTimerInterval);
+
+  setScreen('result');
+  sndFinish();
+
+  const totalScore = swipeScore + quizScore;
+  const maxTotal = 150; // Swipe 80 + Quiz 70
+
+  document.getElementById('cert-user-name').innerText = userName;
+  document.getElementById('score-bar-swipe-text').innerText = `${swipeScore} / 80점`;
+  document.getElementById('score-bar-quiz-text').innerText = `${quizScore} / 70점`;
+  document.getElementById('score-total-text').innerText = `${totalScore}점 / 150점`;
+
+  setTimeout(() => {
+    document.getElementById('score-bar-swipe').style.width = `${(swipeScore / 80) * 100}%`;
+    document.getElementById('score-bar-quiz').style.width = `${(quizScore / 70) * 100}%`;
+  }, 200);
+
+  // Grade Calculation
+  let grade = "브론즈 마스터";
+  let gradeClass = "bg-amber-100 text-amber-800 border-amber-300";
+  let trophy = "🥉";
+  let benefitHtml = "";
+
+  if (totalScore >= 125) {
+    grade = "골드 마스터 (Gold Master - 상위 10%)";
+    gradeClass = "bg-yellow-100 text-yellow-900 border-yellow-400";
+    trophy = "🏆";
+    benefitHtml = `
+      <b class="text-amber-800 block text-xs mb-1">👑 골드 마스터 달성 특전</b>
+      • 인기 섀시 사전 예약 물량 쿼터 최우선 배정 권한 부여<br>
+      • 분기별 세일즈 판촉지원비 추가 20% 가산 지급<br>
+      • 명함 및 제안서에 'Tata Daewoo Certified Master SR' 공식 엠블럼 표기 권한
+    `;
+  } else if (totalScore >= 90) {
+    grade = "실버 마스터 (Silver Master - 상위 30%)";
+    gradeClass = "bg-slate-200 text-slate-800 border-slate-400";
+    trophy = "🥈";
+    benefitHtml = `
+      <b class="text-slate-800 block text-xs mb-1">🥈 실버 마스터 달성 특전</b>
+      • 본사 공식 시승차량 배정 우선권 부여<br>
+      • 신차 런칭 초청 행사 및 특장 프로모션 지원금 가점 부여
+    `;
+  } else {
+    grade = "브론즈 마스터 (일반 이수)";
+    gradeClass = "bg-orange-100 text-orange-800 border-orange-300";
+    trophy = "🥉";
+    benefitHtml = `
+      <b class="text-orange-800 block text-xs mb-1">💡 역량 강화 권고</b>
+      • 기본 이수가 완료되었으나, 상위 골드 혜택(사전 물량 쿼터)을 위해 재도전을 권장합니다.
+    `;
+  }
+
+  document.getElementById('result-trophy').innerText = trophy;
+  const badgeEl = document.getElementById('cert-badge');
+  badgeEl.className = `inline-block px-3 py-1 rounded-full font-black text-xs border ${gradeClass}`;
+  badgeEl.innerText = grade;
+  document.getElementById('cert-benefit-box').innerHTML = benefitHtml;
+
+  document.getElementById('header-grade-tag').className = `text-[10px] px-1.5 py-0.2 rounded font-bold border ${gradeClass}`;
+  document.getElementById('header-grade-tag').innerText = grade.split(' ')[0];
+}
+
+window.restartChallenge = function() {
+  setScreen('intro');
+};
+</script>
+</body>
+</html>
