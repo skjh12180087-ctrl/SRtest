@@ -108,7 +108,7 @@ body { height:100vh; height:100dvh; font-family:'Pretendard Variable',-apple-sys
       <span id="quiz-category" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">-</span>
       <span id="quiz-badge" class="text-xs font-bold text-amber-600"></span>
     </div>
-    <div id="quiz-group" class="text-[11px] font-bold text-slate-500"></div>
+    <div id="quiz-group" class="px-3 py-1.5 rounded-lg text-xs font-bold text-white"></div>
     <h3 id="quiz-question" class="text-base font-bold text-slate-900 leading-snug">-</h3>
     <div id="quiz-options" class="space-y-2"></div>
     <div class="flex gap-2 pt-1">
@@ -164,6 +164,16 @@ body { height:100vh; height:100dvh; font-family:'Pretendard Variable',-apple-sys
     <tr><td class="border p-1.5 font-bold">DEXEN</td><td class="border p-1.5 text-right">150</td><td class="border p-1.5 text-right">139</td><td class="border p-1.5 text-right">92.7%</td></tr></tbody></table></div>
 </div>
 
+<div id="type-intro" class="fixed inset-0 bg-black/50 z-40 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl p-6 max-w-sm w-full card-shadow text-center space-y-3 pop">
+    <div id="ti-icon" class="text-4xl"></div>
+    <div id="ti-step" class="text-xs font-bold text-blue-700"></div>
+    <h4 id="ti-name" class="text-lg font-black text-slate-900"></h4>
+    <p id="ti-desc" class="text-xs text-slate-500 leading-relaxed"></p>
+    <button onclick="beginQ()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-sm">시작하기 ▶</button>
+  </div>
+</div>
+
 <div id="modal-box" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl p-6 max-w-sm w-full card-shadow text-center space-y-3">
     <h4 id="modal-title" class="text-sm font-bold">알림</h4>
@@ -176,7 +186,7 @@ body { height:100vh; height:100dvh; font-family:'Pretendard Variable',-apple-sys
 /* ===== 설정 ===== */
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycby-ZN-5WkC4SouxLPjDGvm7Ig_HHoOxVgb7qEp6hBgESgS9jrS_fuavUO3YFNHDnr4/exec';
 const SHEET_KEY = 'tata-sales-2026';
-const SPEED_SEC = 360, Q_SEC = 15;
+const Q_SEC = 15;
 const VEH = { HIXEN: '하이쎈', KUXEN: '구쎈', MAXEN: '맥쎈', DEXEN: '더쎈', NOVUS: '노부스' };
 
 /* ===== 문항 데이터 ===== */
@@ -314,21 +324,52 @@ const POOL_RAW = [
   { cat: "10월 판매정책", q: "2026년 10월 조건표에서 '25년 8월~10월 완성된 MY25 재고'에 적용되는 에이징 할인은?", o: ["1,000만원", "800만원 (8,000천원)", "500만원", "200만원"], a: 1, exp: "25년 8월~10월 완성된 MY25 에이징 재고 차량은 HCV, MCV, LCV 모두 대당 800만원이 할인됩니다." },
   { cat: "10월 SR 프로모션", q: "2026년 10월 SR 프로모션 중 '입사 24개월 이하 SR 대상 기본 지원 조건'은?", o: ["맥쎈 2대 이상 출고 시 100만원", "차종/대수 관계없이 10월 중 1대 이상 판매 시 50만원 정액 지급 (재입사자/대표 제외)", "더쎈 3대 이상 시 50만원", "입사 12개월 이하만 50만원"], a: 1, exp: "입사 24개월 이하 SR은 10월 중 1대 이상 출고 시 차종 불문 50만원이 정액 지급됩니다." },
   { cat: "10월 SR 프로모션", q: "2026년 10월 프로모션에서 '대당 200만원'의 특별 인센티브가 지급되는 대상 차종은?", o: ["HCV 전 차종", "신차 하이쎈(HIXEN) 전 차량, 그리고 MCV/LCV 중 MY25(2025년 완성차)", "맥쎈 트랙터 MY26 전 차량", "구쎈 카고 전 차량"], a: 1, exp: "신차 하이쎈 전 차량 및 MCV/LCV MY25 장기재고 판매 시 대당 200만원이 지급됩니다." },
-  { cat: "10월 SR 프로모션", q: "입사 18개월 차 SR이 10월에 '하이쎈 1대'와 'MY25 더쎈 1대'를 출고 시 총 인센티브와 지급 조건은?", o: ["총 400만원 / 퇴사자도 수령 가능", "총 450만원 (기본 50만 + 하이쎈 200만 + 더쎈 MY25 200만) / 2026년 11월 1일 재직 중인 SR에 한함", "총 250만원 (대당 200만 1회 한정)", "총 500만원"], a: 1, exp: "기본 정액 50만원에 하이쎈 200만원, 더쎈 MY25 200만원이 합산되어 총 450만원이 11월 1일 재직자에게 지급됩니다." }
+  { cat: "10월 SR 프로모션", q: "입사 18개월 차 SR이 10월에 '하이쎈 1대'와 'MY25 더쎈 1대'를 출고 시 총 인센티브와 지급 조건은?", o: ["총 400만원 / 퇴사자도 수령 가능", "총 450만원 (기본 50만 + 하이쎈 200만 + 더쎈 MY25 200만) / 2026년 11월 1일 재직 중인 SR에 한함", "총 250만원 (대당 200만 1회 한정)", "총 500만원"], a: 1, exp: "기본 정액 50만원에 하이쎈 200만원, 더쎈 MY25 200만원이 합산되어 총 450만원이 11월 1일 재직자에게 지급됩니다." },
+
+  // 2026년 11월 판매조건(MY26) & SR 프로모션 — 'p11' / 'sr11'
+  { t: "p11", cat: "11월 판매조건 · 차종별 최대 할인", q: "'26년 11월 판매조건(MY26) 기준 맥쎈 8x4 덤프의 최대 할인 금액은?", o: ["2,400만원", "3,600만원", "4,100만원", "4,500만원"], a: 2, exp: "맥쎈 8x4 덤프는 G/L D/C 2,400만원 + 전략 1,600만원 + 노후대폐차 100만원 = 최대 4,100만원입니다." },
+  { t: "p11", cat: "11월 판매조건 · 차종별 최대 할인", q: "맥쎈 트랙터(6x2·6x4)의 11월 최대 할인 금액과 구성으로 올바른 것은?", o: ["최대 3,600만원 (G/L D/C 2,300 + 전략 1,200 + 노후대폐차 100)", "최대 3,500만원 (G/L D/C 2,300 + 전략 1,200)", "최대 4,100만원 (G/L D/C 2,400 + 전략 1,600 + 노후대폐차 100)", "최대 2,300만원 (G/L D/C만 적용)"], a: 0, exp: "맥쎈 트랙터는 6x2·6x4 모두 G/L D/C 2,300만원 + 전략 1,200만원 + 노후대폐차 100만원 = 최대 3,600만원입니다." },
+  { t: "p11", cat: "11월 판매조건 · 특별조건(전략)", q: "맥쎈 10x4 카고에 적용되는 '전략' 특별조건 금액은?", o: ["700만원", "1,000만원", "1,300만원", "2,100만원"], a: 2, exp: "맥쎈 10x4 카고는 G/L D/C 700만원 + 전략 1,300만원 + 노후대폐차 100만원 = 최대 2,100만원입니다. (8x4 카고의 전략은 1,000만원)" },
+  { t: "p11", cat: "11월 판매조건 · 특별조건(노후대폐차)", q: "노후대폐차 특별조건(100만원)이 적용되지 않는 차종은?", o: ["맥쎈 8x4 카고", "노부스 카고 (4x2, 6x4)", "맥쎈 트랙터", "노부스 믹서"], a: 1, exp: "노부스 카고는 노후대폐차 항목이 '-'이라 G/L D/C가 곧 최대 할인입니다(4x2 100만원, 6x4 300만원). 노부스 덤프·믹서에는 노후대폐차 100만원이 포함됩니다." },
+  { t: "p11", cat: "11월 판매조건 · 차종별 최대 할인", q: "노부스 6x4 덤프의 11월 할인 구성으로 올바른 것은?", o: ["G/L D/C 600 + 전략 100 + 노후대폐차 100 = 최대 800만원", "G/L D/C 600 + 전략 200 + 노후대폐차 100 = 최대 900만원", "G/L D/C 2,400 + 전략 1,600 = 최대 4,000만원", "G/L D/C 300 + 노후대폐차 100 = 최대 400만원"], a: 0, exp: "노부스 6x4 덤프는 G/L D/C 600만원 + 전략 100만원 + 노후대폐차 100만원 = 최대 800만원입니다. (900만원은 맥쎈 6x4 덤프)" },
+  { t: "p11", cat: "11월 판매조건 · 차종별 최대 할인", q: "맥쎈 4x2_9.1m 카고의 11월 최대 할인 금액은?", o: ["없음", "100만원 (노후대폐차만 적용)", "200만원", "300만원"], a: 1, exp: "맥쎈 4x2_9.1m 카고는 G/L D/C와 전략이 '-'이고 노후대폐차 100만원만 적용되어 최대 100만원입니다." },
+  { t: "p11", cat: "11월 판매조건 · 등록 특별할인", q: "하이쎈(HIXEN)·LCV 자가용 또는 영업용 등록 특별할인에 대한 설명으로 올바른 것은?", o: ["자가용 100만원, 영업용 50만원 (사업자등록증 확인) / 에이징·경쟁사 보유·재구매 할인과 중복 적용 가능", "자가용 50만원, 영업용 100만원 / 다른 할인과 중복 불가", "자가용·영업용 모두 100만원 / 에이징 재고 할인과만 중복 가능", "자가용 100만원 단일 적용 / 사업자등록증 불필요"], a: 0, exp: "HIXEN·LCV는 사업자등록증 확인 후 자가용 100만원, 영업용 50만원 특별할인이 적용되며, 에이징 재고 할인 및 경쟁사 보유·재구매 할인과 중복 적용이 가능합니다." },
+  { t: "p11", cat: "11월 판매조건 · 재구매 할인", q: "HCV 8x4 덤프·트랙터 구매 고객의 '재구매 할인' 조건과 금액으로 올바른 것은?", o: ["동일 차주(명의)가 당사 동일 차종 보유 후 재구매 시 200만원", "MCV·LCV와 같이 50만원", "차종 무관 당사 차량 보유 고객 200만원", "경쟁사 차량 보유 고객에 한해 200만원"], a: 0, exp: "HCV 8x4 덤프·트랙터는 당사 차량(동일 차종 한정) 보유 고객이 동일 차주(명의)로 재구매할 때 200만원 할인입니다. MCV·LCV는 50만원입니다." },
+  { t: "p11", cat: "11월 판매조건 · 경쟁사 보유 할인", q: "MCV·LCV 구매 고객 중 경쟁사 차량 보유 고객에게 적용되는 할인 금액과 확인 서류는?", o: ["50만원 / 실차주 차량등록증 확인", "50만원 / 사업자등록증 확인", "100만원 / 실차주 차량등록증 확인", "200만원 / 사업자등록증 확인"], a: 0, exp: "MCV·LCV 경쟁사 보유 고객은 50만원 할인(실차주 차량등록증 확인)이며 자가용·영업용 할인과 중복 가능합니다. HCV 8x4 덤프·트랙터는 경쟁사 동일 차종 보유 시 200만원입니다." },
+  { t: "p11", cat: "11월 판매조건 · 에이징 재고 할인", q: "'25년 11~12월에 완성된 재고의 11월 에이징 할인 금액은?", o: ["HCV·MCV·LCV 모두 500만원", "HCV·MCV·LCV 모두 800만원", "HCV 500만원, MCV·LCV 800만원", "HCV·MCV·LCV 모두 100만원"], a: 0, exp: "에이징 재고 할인표에서 25년 11~12월 완성분은 HCV·MCV·LCV 모두 500만원입니다." },
+  { t: "p11", cat: "11월 판매조건 · 에이징 재고 할인", q: "'25년 8월~10월 완성 재고의 에이징 할인에 대한 설명으로 올바른 것은?", o: ["HCV는 해당 없음('-'), MCV·LCV는 각 800만원", "HCV·MCV·LCV 모두 800만원", "HCV 500만원, MCV·LCV 800만원", "전 차종 해당 없음"], a: 0, exp: "25년 8~10월 완성분은 HCV가 '-'(해당 없음)이고 MCV·LCV는 각 800만원입니다. 이후 완성 월이 늦어질수록 할인이 줄어듭니다(26년 3월분은 50만원)." },
+  { t: "p11", cat: "11월 판매조건 · MY25 특별할인", q: "11월 판매조건의 'MY25 차량 선착순 특별 할인'에 대한 설명으로 올바른 것은?", o: ["선착순 30명, 대당 200만원 (매출 기준 선착순, RVAD 조건에 한함)", "선착순 50명, 대당 100만원", "선착순 30명, 대당 300만원 (출고 기준)", "인원 제한 없이 대당 200만원"], a: 0, exp: "MY25 차량은 매출 기준 선착순 30명에게 200만원 특별 할인이 적용되며 RVAD 조건에 한합니다." },
+  { t: "p11", cat: "11월 판매조건 · 무상 장착", q: "11월 판매조건에서 무상 장착으로 안내된 사양은?", o: ["덤프(25.5t, 15t) 자동덮개 / 노부스 믹서 AVM", "모든 카고 ISRI 시트 / 모든 덤프 AVM", "트랙터 자동덮개 / 노부스 카고 AVM", "덤프(25.5t) 자동덮개만"], a: 0, exp: "덤프(25.5t, 15t)에는 자동덮개를, 노부스 믹서에는 AVM을 무상 장착합니다." },
+  { t: "p11", cat: "11월 판매조건 · 더쎈/LCV", q: "더쎈(LCV) 4x2 및 SPV 4x2 OEM에 대한 11월 판매조건 설명으로 올바른 것은?", o: ["G/L D/C·특별조건은 없고('-'), 등록 특별할인(자가용 100만원·영업용 50만원) 등 별도 할인이 가능하다", "G/L D/C 100만원이 기본 적용된다", "노후대폐차 100만원이 적용된다", "더쎈은 등록 특별할인 대상이 아니다"], a: 0, exp: "더쎈 4x2·SPV 4x2 OEM은 G/L D/C와 특별조건이 '-'입니다. 다만 LCV는 자가용 100만원/영업용 50만원 등록 특별할인 대상입니다." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 기간/대상", q: "2026년 11월 SR 프로모션의 시행기간과 대상은?", o: ["2026년 11월 1일~11월 30일 / SR에 한함", "2026년 11월 1일~12월 31일 / 대리점 대표 포함", "2026년 10월 1일~11월 30일 / SR에 한함", "2026년 11월 1일~11월 15일 / SR 및 점장"], a: 0, exp: "FY26-27 11월 SR 프로모션은 SR에 한하며 시행기간은 2026년 11월 1일~11월 30일입니다." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 기본 지원", q: "입사 24개월 이하 SR의 11월 기본 지원 조건과 금액은?", o: ["판매 대수·차종 관계없이 1대 이상 판매 시 50만원 정액", "맥쎈 2대 이상 판매 시 50만원", "더쎈 3대 이상 판매 시 100만원", "HCV 1대 판매 시에만 50만원"], a: 0, exp: "입사 24개월 이하 SR은 판매 대수·차종과 관계없이 1대 이상 판매하면 50만원 정액이 지급됩니다(월 1회 한정)." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 기본 지원", q: "11월 SR 기본 지원금(50만원)이 지급되지 않는 대상은?", o: ["재입사자 및 대리점 대표", "입사 12개월 SR", "더쎈만 판매한 SR", "맥쎈 트랙터를 판매한 SR"], a: 0, exp: "기본 지원 50만원은 입사 24개월 이하 SR 대상이며 재입사자와 대리점 대표는 제외됩니다." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 기본 지원", q: "입사 24개월 이하 SR이 11월에 맥쎈 트랙터 2대를 판매했을 때 기본 지원금은? (MY25 인센티브 제외)", o: ["50만원", "100만원", "150만원", "200만원"], a: 0, exp: "기본 지원은 판매 대수와 관계없이 월 1회 50만원 정액입니다. 맥쎈 트랙터 2대 판매도 50만원입니다." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 차종별 인센티브", q: "MY25 8.8M(JH8K8, JH8H8) 판매 시 대당 SR 인센티브는?", o: ["대당 200만원", "대당 300만원", "대당 400만원", "대당 500만원"], a: 2, exp: "MY25 8.8M(JH8K8, JH8H8)은 대당 400만원입니다. MY25 8.8M 2대 판매 시 800만원입니다." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 차종별 인센티브", q: "입사 24개월 이하 SR이 11월에 MY25 8.8M 1대를 판매하면 받는 총 인센티브는?", o: ["400만원", "450만원", "500만원", "800만원"], a: 1, exp: "기본 지원 50만원 + 8.8M 대당 400만원 = 450만원입니다(차종 관계없이 기본 지원은 월 1회 한정)." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 차종별 인센티브", q: "MY25 JC8L8 2대를 판매했을 때 대당 인센티브 합계는? (기본 지원 50만원 제외)", o: ["200만원", "300만원", "400만원", "800만원"], a: 2, exp: "MY25 JC8L8·JC8K8은 대당 200만원이므로 2대 판매 시 400만원입니다." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 차종별 인센티브", q: "입사 24개월 이하 SR이 MY25 11월 완성 HCV 1대를 판매하면 받는 총 인센티브는?", o: ["30만원", "50만원", "80만원", "430만원"], a: 2, exp: "HCV(MY25 11월 완성)는 대당 30만원이며, 기본 지원 50만원과 합쳐 80만원입니다." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 지급 조건", q: "11월 SR 프로모션 인센티브의 지급시기와 지급 조건은?", o: ["11월 대리점 수수료 지급일에 개인별 누적금액 일괄 지급 (2026년 12월 1일 재직 중인 SR에 한함)", "판매 즉시 건별 지급 (퇴사자 포함)", "12월 말 일괄 지급 (11월 30일 재직자에 한함)", "매출취소 후 재매출분은 무조건 지급"], a: 0, exp: "11월 대리점 수수료 지급일에 개인별 누적금액을 일괄 지급하며, 2026년 12월 1일 재직 중인 SR만 받을 수 있습니다." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 제외 조건", q: "SR 프로모션의 대당 인센티브에서 제외되는 차량은?", o: ["특별인센티브 차량", "MY25 완성 차량", "8.8M 차량", "맥쎈 트랙터"], a: 0, exp: "특별인센티브가 적용되는 차량을 판매한 경우에는 대당 인센티브가 제외됩니다." },
+  { t: "sr11", cat: "11월 SR 프로모션 · 매출취소/재매출", q: "매출취소 후 재매출 시 SR 인센티브가 지급되기 위한 조건은?", o: ["동일 날짜·동일 PO 조건과 동일 실차주 조건을 모두 만족", "동일 날짜·동일 PO 중 하나만 만족", "동일 실차주이면 날짜와 무관하게 지급", "재매출은 어떤 경우에도 지급하지 않음"], a: 0, exp: "매출취소 후 재매출은 ① 동일 날짜·동일 PO 조건 ② 동일 실차주(최초 출고 시 전산 품의서상 실차주)를 모두 만족해야 지급됩니다." }
+
 ];
 /* ===== 유형(카테고리) 설정 — 새 유형은 여기에 한 줄만 추가 ===== */
 const PER_TYPE = 5;   // 스피드 모드: 유형별 출제 문항 수
 const TYPES = [       // 출제 순서 = 배열 순서 (마지막 'spec'은 기본 유형이므로 항상 맨 뒤)
-  { id: 'p10',  name: '10월 판매조건',      icon: '💰', match: ['10월'], until: '2026-11-01T00:00:00+09:00' },   // until: 이 시각 이후 자동 제외
-  { id: 'p11',  name: '11월 판매가격·옵션', icon: '🏷️', match: ['26MY'] },
-  { id: 'spec', name: '차량 상세 설명',     icon: '🚚', match: [] }
+  { id: 'p10',  name: '10월 판매조건',    icon: '💰', color: '#64748b', desc: '', match: ['10월'], until: '2026-11-01T00:00:00+09:00' },   // until: 이 시각 이후 자동 제외
+  { id: 'p11',  name: '11월 판매조건',    icon: '💰', color: '#0055b8', desc: "'26년 11월 판매조건(MY26) — 차종별 할인 금액, 특별조건, 재구매·경쟁사 보유 할인, 에이징 재고 할인", match: [] },
+  { id: 'sr11', name: '11월 SR 프로모션', icon: '🎯', color: '#7c3aed', desc: '2026년 11월 SR 대상 프로모션 — 지급 대상·차종별 금액·지급 시기와 조건', match: [] },
+  { id: 'price', name: '26MY 가격·옵션',  icon: '🏷️', color: '#0d9488', desc: '26MY 판매가격표 — 옵션 코드, 선택 조건, 가격 차이', match: ['26MY'] },
+  { id: 'spec', name: '차량 상세 설명',   icon: '🚚', color: '#b45309', desc: '맥쎈·구쎈·하이쎈·더쎈 제품 USP와 사양', match: [] }
 ];
-// 문항에 t:'p11' 처럼 직접 지정하면 우선 적용, 없으면 cat 앞부분(match)으로 자동 분류
+// 문항에 t:'p11'(11월 판매조건) / 'sr11'(SR 프로모션) 처럼 직접 지정하면 우선 적용, 없으면 cat 앞부분(match)으로 자동 분류
 const typeOf = q => q.t || (TYPES.find(t => t.match.some(m => q.cat.startsWith(m))) || TYPES[TYPES.length - 1]).id;
 const alive = t => !t.until || Date.now() < new Date(t.until).getTime();
 const POOL = POOL_RAW.map(q => ({ ...q, t: typeOf(q) })).filter(q => { const t = TYPES.find(x => x.id === q.t); return t && alive(t); });
 const ACTIVE = TYPES.filter(t => POOL.some(q => q.t === t.id));   // 문항이 있는 유형만 노출
 const SPEED_N = ACTIVE.reduce((sum, t) => sum + Math.min(PER_TYPE, POOL.filter(q => q.t === t.id).length), 0);
+const SPEED_SEC = 60 + SPEED_N * 20;   // 문항 수에 맞춰 전체 제한시간 자동 계산
 
 /* ===== 공통 ===== */
 const $ = id => document.getElementById(id);
@@ -340,7 +381,7 @@ const closeModal = () => $('modal-box').classList.add('hidden');
 window.togglePanicMode = () => $('panic-overlay').classList.toggle('hidden');
 window.addEventListener('keydown', e => { if (e.key === 'Escape') togglePanicMode(); });
 const VIEWS = ['intro', 'm1', 'm2', 'result'];
-function show(v) { VIEWS.forEach(n => { const el = $('view-' + n); el.classList.add('hidden'); el.classList.remove('flex'); }); const t = $('view-' + v); t.classList.remove('hidden'); if (v === 'm1' || v === 'm2') t.classList.add('flex'); $('main-content').scrollTop = 0; }
+function show(v) { $('type-intro').classList.add('hidden'); VIEWS.forEach(n => { const el = $('view-' + n); el.classList.add('hidden'); el.classList.remove('flex'); }); const t = $('view-' + v); t.classList.remove('hidden'); if (v === 'm1' || v === 'm2') t.classList.add('flex'); $('main-content').scrollTop = 0; }
 
 /* 사운드 (기본 꺼짐: 사무실용) */
 let soundOn = false, ac = null;
@@ -368,7 +409,7 @@ function updateIntro() {
   const speed = quizMode === 'speed';
   $('btn-mode-speed').className = 'py-2.5 px-2 rounded-xl border text-xs ' + (speed ? 'font-bold border-blue-600 bg-blue-50 text-blue-700' : 'font-medium border-slate-200 bg-white text-slate-600');
   $('btn-mode-full').className = 'py-2.5 px-2 rounded-xl border text-xs ' + (!speed ? 'font-bold border-blue-600 bg-blue-50 text-blue-700' : 'font-medium border-slate-200 bg-white text-slate-600');
-  $('mode-desc').innerText = speed ? `유형별 ${PER_TYPE}문항 × ${ACTIVE.length}개 유형 = ${SPEED_N}문항 · 제한시간 ${SPEED_SEC / 60}분` : `전체 ${POOL.length}문항 · 유형별 순서 출제 (문항당 ${Q_SEC}초)`;
+  $('mode-desc').innerText = speed ? `유형별 ${PER_TYPE}문항 × ${ACTIVE.length}개 유형 = ${SPEED_N}문항 · 제한시간 ${Math.round(SPEED_SEC / 60)}분` : `전체 ${POOL.length}문항 · 유형별 순서 출제 (문항당 ${Q_SEC}초)`;
   $('type-list').innerText = ACTIVE.map(t => t.icon + ' ' + t.name).join(' · ');
 }
 function setQuizMode(m) { quizMode = m; updateIntro(); }
@@ -449,7 +490,7 @@ function renderQ() {
   if (qi >= quizList.length) { practice ? finishPractice() : finish(); return; }
   const q = quizList[qi], boss = q.pos % 5 === 0; runId++;
   qLocked = false; qLeft = Q_SEC; qStart = Date.now();
-  $('quiz-num').innerText = qi + 1; $('quiz-category').innerText = q.cat; $('quiz-group').innerText = groupLabel(q); $('quiz-question').innerText = q.q; $('quiz-score').innerText = points;
+  $('quiz-num').innerText = qi + 1; $('quiz-category').innerText = q.cat; $('quiz-group').innerText = groupLabel(q); $('quiz-group').style.background = (TYPES.find(t => t.id === q.t) || {}).color || '#0055b8'; $('quiz-question').innerText = q.q; $('quiz-score').innerText = points;
   $('quiz-badge').innerText = boss ? '👔 본부장 돌발 문제 (점수 2배)' : (streak >= 2 ? `🔥 ${streak}연속 정답!` : '');
   $('quiz-feedback').className = 'hidden'; $('quiz-next').classList.add('hidden');
   $('ll-half').disabled = !ll.half || practice; $('ll-time').disabled = !ll.time || practice;
@@ -460,12 +501,23 @@ function renderQ() {
     b.textContent = t; b.onclick = () => answerQ(i); box.appendChild(b);
   });
   const bar = $('question-timer-bar'); bar.style.width = '100%'; bar.className = 'bg-blue-600 h-full';
+  if (q.pos === 1 && !practice) { qLocked = true; showTypeIntro(q); return; }   // 새 유형 시작 안내 후 타이머 시작
+  startTimer();
+}
+function startTimer() {
+  const bar = $('question-timer-bar'); qLocked = false; qLeft = Q_SEC; qStart = Date.now(); clearInterval(qTimer);
   qTimer = setInterval(() => {
     qLeft -= 0.1; bar.style.width = Math.max(0, Math.min(100, qLeft / Q_SEC * 100)) + '%';
     if (qLeft <= 4) bar.className = 'bg-red-500 h-full';
     if (qLeft <= 0) answerQ(-1);
   }, 100);
 }
+function showTypeIntro(q) {
+  const T = TYPES.find(t => t.id === q.t) || {}, idx = ACTIVE.findIndex(t => t.id === q.t) + 1;
+  $('ti-icon').innerText = T.icon || ''; $('ti-step').innerText = `유형 ${idx} / ${ACTIVE.length} · ${quizList.filter(x => x.t === q.t).length}문항`;
+  $('ti-name').innerText = T.name || ''; $('ti-desc').innerText = T.desc || ''; $('type-intro').classList.remove('hidden');
+}
+function beginQ() { $('type-intro').classList.add('hidden'); if (done) return; startTimer(); }
 function useHalf() {
   if (qLocked || !ll.half) return; ll.half = false; $('ll-half').disabled = true;
   const q = quizList[qi];
