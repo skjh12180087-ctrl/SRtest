@@ -43,8 +43,9 @@ body { height:100vh; height:100dvh; font-family:'Pretendard Variable',-apple-sys
   </div>
   <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2 text-slate-600">
     <div class="font-bold text-blue-800 text-[13px]">🎮 진행 안내</div>
+    <p>• <b>출제 유형:</b> <span id="type-list"></span></p>
     <p>• <b>모듈 1 (특장 스와이프):</b> 고객 상황과 <b>추천 차종</b>이 나옵니다. 맞으면 <b>오른쪽(✅)</b>, 아니면 <b>왼쪽(❌)</b>으로 넘기세요.</p>
-    <p>• <b>모듈 2 (실전 퀴즈):</b> 제품 USP · 26MY 옵션/가격 · 판매조건. 빨리 맞힐수록, 연속으로 맞힐수록 점수가 커집니다. 5문항마다 <b>본부장 돌발 문제(점수 2배)</b>가 나옵니다.</p>
+    <p>• <b>모듈 2 (실전 퀴즈):</b> 제품 USP · 26MY 옵션/가격 · 판매조건. 빨리 맞힐수록, 연속으로 맞힐수록 점수가 커집니다. 유형별 5번째 문제는 <b>본부장 돌발 문제(점수 2배)</b>입니다.</p>
     <p>• <b>라이프라인:</b> 50:50, 시간 +8초 (각 1회). 틀린 문제는 끝나고 <b>오답노트</b>로 복습할 수 있어요.</p>
   </div>
   <div class="space-y-4">
@@ -107,6 +108,7 @@ body { height:100vh; height:100dvh; font-family:'Pretendard Variable',-apple-sys
       <span id="quiz-category" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">-</span>
       <span id="quiz-badge" class="text-xs font-bold text-amber-600"></span>
     </div>
+    <div id="quiz-group" class="text-[11px] font-bold text-slate-500"></div>
     <h3 id="quiz-question" class="text-base font-bold text-slate-900 leading-snug">-</h3>
     <div id="quiz-options" class="space-y-2"></div>
     <div class="flex gap-2 pt-1">
@@ -135,6 +137,7 @@ body { height:100vh; height:100dvh; font-family:'Pretendard Variable',-apple-sys
       <div><span class="text-slate-400">최고 콤보</span><br><b id="res-combo" class="text-sm">-</b></div>
       <div><span class="text-slate-400">소요 시간</span><br><b id="res-time" class="text-sm">-</b></div>
     </div>
+    <div id="res-types" class="mt-3 space-y-1.5 text-left"></div>
     <p class="text-[11px] text-slate-400 mt-3 text-left">※ 재미용 칭호입니다. 실제 혜택은 별도 안내에 따릅니다.</p>
   </div>
   <details id="wrong-note" class="text-left bg-red-50 border border-red-200 rounded-xl p-3 text-xs hidden">
@@ -146,7 +149,8 @@ body { height:100vh; height:100dvh; font-family:'Pretendard Variable',-apple-sys
     <button onclick="downloadReport()" class="w-full bg-[#0055b8] hover:bg-[#004494] text-white font-bold py-3 rounded-xl text-sm">📥 성적표 다운로드 (TXT)</button>
     <button onclick="location.reload()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-xl text-xs">🔄 다시 도전하기</button>
   </div>
-  <p id="sync-status" class="text-[11px]"></p>
+  <p id="sync-status" class="text-xs font-bold"></p>
+  <button id="btn-resend" onclick="resend()" class="hidden w-full bg-amber-500 hover:bg-amber-400 text-white font-bold py-2.5 rounded-xl text-xs">📤 결과 다시 전송</button>
 </div>
 </main>
 
@@ -172,8 +176,7 @@ body { height:100vh; height:100dvh; font-family:'Pretendard Variable',-apple-sys
 /* ===== 설정 ===== */
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycby-ZN-5WkC4SouxLPjDGvm7Ig_HHoOxVgb7qEp6hBgESgS9jrS_fuavUO3YFNHDnr4/exec';
 const SHEET_KEY = 'tata-sales-2026';
-const SPEED_N = 15, SPEED_SEC = 360, Q_SEC = 15;
-const EXPIRES = [{ prefix: '10월', until: '2026-11-01T00:00:00+09:00' }];   // 월별 정책 문항 유효기간 (11월부터 자동 제외)
+const SPEED_SEC = 360, Q_SEC = 15;
 const VEH = { HIXEN: '하이쎈', KUXEN: '구쎈', MAXEN: '맥쎈', DEXEN: '더쎈', NOVUS: '노부스' };
 
 /* ===== 문항 데이터 ===== */
@@ -313,7 +316,19 @@ const POOL_RAW = [
   { cat: "10월 SR 프로모션", q: "2026년 10월 프로모션에서 '대당 200만원'의 특별 인센티브가 지급되는 대상 차종은?", o: ["HCV 전 차종", "신차 하이쎈(HIXEN) 전 차량, 그리고 MCV/LCV 중 MY25(2025년 완성차)", "맥쎈 트랙터 MY26 전 차량", "구쎈 카고 전 차량"], a: 1, exp: "신차 하이쎈 전 차량 및 MCV/LCV MY25 장기재고 판매 시 대당 200만원이 지급됩니다." },
   { cat: "10월 SR 프로모션", q: "입사 18개월 차 SR이 10월에 '하이쎈 1대'와 'MY25 더쎈 1대'를 출고 시 총 인센티브와 지급 조건은?", o: ["총 400만원 / 퇴사자도 수령 가능", "총 450만원 (기본 50만 + 하이쎈 200만 + 더쎈 MY25 200만) / 2026년 11월 1일 재직 중인 SR에 한함", "총 250만원 (대당 200만 1회 한정)", "총 500만원"], a: 1, exp: "기본 정액 50만원에 하이쎈 200만원, 더쎈 MY25 200만원이 합산되어 총 450만원이 11월 1일 재직자에게 지급됩니다." }
 ];
-const POOL = POOL_RAW.filter(q => !EXPIRES.some(e => q.cat.startsWith(e.prefix) && Date.now() >= new Date(e.until).getTime()));
+/* ===== 유형(카테고리) 설정 — 새 유형은 여기에 한 줄만 추가 ===== */
+const PER_TYPE = 5;   // 스피드 모드: 유형별 출제 문항 수
+const TYPES = [       // 출제 순서 = 배열 순서 (마지막 'spec'은 기본 유형이므로 항상 맨 뒤)
+  { id: 'p10',  name: '10월 판매조건',      icon: '💰', match: ['10월'], until: '2026-11-01T00:00:00+09:00' },   // until: 이 시각 이후 자동 제외
+  { id: 'p11',  name: '11월 판매가격·옵션', icon: '🏷️', match: ['26MY'] },
+  { id: 'spec', name: '차량 상세 설명',     icon: '🚚', match: [] }
+];
+// 문항에 t:'p11' 처럼 직접 지정하면 우선 적용, 없으면 cat 앞부분(match)으로 자동 분류
+const typeOf = q => q.t || (TYPES.find(t => t.match.some(m => q.cat.startsWith(m))) || TYPES[TYPES.length - 1]).id;
+const alive = t => !t.until || Date.now() < new Date(t.until).getTime();
+const POOL = POOL_RAW.map(q => ({ ...q, t: typeOf(q) })).filter(q => { const t = TYPES.find(x => x.id === q.t); return t && alive(t); });
+const ACTIVE = TYPES.filter(t => POOL.some(q => q.t === t.id));   // 문항이 있는 유형만 노출
+const SPEED_N = ACTIVE.reduce((sum, t) => sum + Math.min(PER_TYPE, POOL.filter(q => q.t === t.id).length), 0);
 
 /* ===== 공통 ===== */
 const $ = id => document.getElementById(id);
@@ -353,7 +368,8 @@ function updateIntro() {
   const speed = quizMode === 'speed';
   $('btn-mode-speed').className = 'py-2.5 px-2 rounded-xl border text-xs ' + (speed ? 'font-bold border-blue-600 bg-blue-50 text-blue-700' : 'font-medium border-slate-200 bg-white text-slate-600');
   $('btn-mode-full').className = 'py-2.5 px-2 rounded-xl border text-xs ' + (!speed ? 'font-bold border-blue-600 bg-blue-50 text-blue-700' : 'font-medium border-slate-200 bg-white text-slate-600');
-  $('mode-desc').innerText = speed ? `${SPEED_N}문항 랜덤 · 제한시간 ${SPEED_SEC / 60}분` : `전체 ${POOL.length}문항 · 전체 제한시간 없음 (문항당 ${Q_SEC}초)`;
+  $('mode-desc').innerText = speed ? `유형별 ${PER_TYPE}문항 × ${ACTIVE.length}개 유형 = ${SPEED_N}문항 · 제한시간 ${SPEED_SEC / 60}분` : `전체 ${POOL.length}문항 · 유형별 순서 출제 (문항당 ${Q_SEC}초)`;
+  $('type-list').innerText = ACTIVE.map(t => t.icon + ' ' + t.name).join(' · ');
 }
 function setQuizMode(m) { quizMode = m; updateIntro(); }
 updateIntro();
@@ -416,17 +432,24 @@ function bindSwipe() {
 
 /* ===== 모듈 2: 실전 퀴즈 ===== */
 const prepQ = q => { const right = q.o[q.a], o = shuffle(q.o); return Object.assign({}, q, { o, a: o.indexOf(right) }); };
+function buildQuizList() {
+  return ACTIVE.flatMap(t => {
+    const qs = shuffle(POOL.filter(q => q.t === t.id));
+    return (quizMode === 'speed' ? qs.slice(0, PER_TYPE) : qs).map((q, i) => prepQ({ ...q, pos: i + 1 }));
+  });
+}
+function groupLabel(q) { const T = TYPES.find(t => t.id === q.t) || {}; return `${T.icon || ''} ${T.name || ''} · ${q.pos}/${quizList.filter(x => x.t === q.t).length}`; }
 function goQuiz() {
-  quizList = (quizMode === 'speed' ? shuffle(POOL).slice(0, SPEED_N) : shuffle(POOL)).map(prepQ);
+  quizList = buildQuizList();
   qi = 0; show('m2'); $('quiz-total-display').innerText = quizList.length; renderQ();
 }
 function renderQ() {
   clearInterval(qTimer); clearTimeout(window._autoNext);
   if (done) return;
   if (qi >= quizList.length) { practice ? finishPractice() : finish(); return; }
-  const q = quizList[qi], boss = (qi + 1) % 5 === 0; runId++;
+  const q = quizList[qi], boss = q.pos % 5 === 0; runId++;
   qLocked = false; qLeft = Q_SEC; qStart = Date.now();
-  $('quiz-num').innerText = qi + 1; $('quiz-category').innerText = q.cat; $('quiz-question').innerText = q.q; $('quiz-score').innerText = points;
+  $('quiz-num').innerText = qi + 1; $('quiz-category').innerText = q.cat; $('quiz-group').innerText = groupLabel(q); $('quiz-question').innerText = q.q; $('quiz-score').innerText = points;
   $('quiz-badge').innerText = boss ? '👔 본부장 돌발 문제 (점수 2배)' : (streak >= 2 ? `🔥 ${streak}연속 정답!` : '');
   $('quiz-feedback').className = 'hidden'; $('quiz-next').classList.add('hidden');
   $('ll-half').disabled = !ll.half || practice; $('ll-time').disabled = !ll.time || practice;
@@ -451,7 +474,7 @@ function useHalf() {
 function useTime() { if (qLocked || !ll.time) return; ll.time = false; $('ll-time').disabled = true; qLeft = Math.min(qLeft + 8, Q_SEC + 8); }
 function answerQ(idx) {
   if (qLocked || done) return; qLocked = true; clearInterval(qTimer);
-  const q = quizList[qi], ok = idx === q.a, boss = (qi + 1) % 5 === 0, sec = Math.round((Date.now() - qStart) / 100) / 10;
+  const q = quizList[qi], ok = idx === q.a, boss = q.pos % 5 === 0, sec = Math.round((Date.now() - qStart) / 100) / 10;
   Array.from($('quiz-options').children).forEach((b, i) => {
     b.disabled = true;
     if (i === q.a) b.className = 'w-full text-left p-3.5 rounded-xl border-2 border-green-500 bg-green-50 text-sm font-bold text-green-900';
@@ -459,7 +482,7 @@ function answerQ(idx) {
     else b.className = 'w-full text-left p-3.5 rounded-xl border border-slate-200 text-sm opacity-40';
   });
   const fb = $('quiz-feedback');
-  if (!practice) answers.push({ cat: q.cat, q: q.q.slice(0, 60), ok, sec });
+  if (!practice) answers.push({ cat: q.cat, t: q.t, q: q.q.slice(0, 60), ok, sec });
   if (ok) {
     sfxOk();
     if (!practice) {
@@ -493,6 +516,11 @@ function finish() {
   else if (pct >= 70) { badge = '🥈'; title = '실버 세일즈 마스터 (대리점 에이스)'; }
   else { badge = '🥉'; title = '브론즈 세일즈 마스터 (출고장 신입)'; }
   $('res-badge').innerText = badge; $('res-title').innerText = title;
+  $('res-types').innerHTML = ACTIVE.map(t => {
+    const a = answers.filter(x => x.t === t.id); if (!a.length) return '';
+    const ok = a.filter(x => x.ok).length, p = Math.round(ok / a.length * 100);
+    return `<div class="flex items-center gap-2"><span class="w-32 shrink-0 text-slate-600">${t.icon} ${esc(t.name)}</span><div class="flex-1 bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-full" style="width:${p}%"></div></div><b class="w-12 text-right">${ok}/${a.length}</b></div>`;
+  }).join('');
   renderWrongNote();
   sendResult({ sOk, sTot, qTot, pct, secs, title });
 }
@@ -511,20 +539,43 @@ function finishPractice() {
   showModal('오답 복습 완료', '틀렸던 문제를 모두 다시 풀었습니다. 복습 결과는 점수에 반영되지 않습니다.');
 }
 
-/* ===== 구글 시트 전송 ===== */
+/* ===== 구글 시트 전송 (보관 후 전송 방식) ===== */
 const urlOk = () => /^https:\/\/script\.google\.com\//.test(SHEET_URL);
 function setSync(t, c) { const el = $('sync-status'); el.textContent = t; el.style.color = c; }
+const getBox = () => { try { return JSON.parse(localStorage.getItem('smc_pending') || '[]'); } catch (e) { return []; } };
+const setBox = q => { try { localStorage.setItem('smc_pending', JSON.stringify(q.slice(-20))); } catch (e) {} };
+const addBox = p => setBox(getBox().filter(x => x.id !== p.id).concat(p));
+const delBox = id => setBox(getBox().filter(x => x.id !== id));
 const post = p => fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(p) });
-function queueP(p) { try { const q = JSON.parse(localStorage.getItem('smc_pending') || '[]'); q.push(p); localStorage.setItem('smc_pending', JSON.stringify(q.slice(-20))); } catch (e) {} }
+const beacon = p => { try { return navigator.sendBeacon(SHEET_URL, new Blob([JSON.stringify(p)], { type: 'text/plain;charset=utf-8' })); } catch (e) { return false; } };
+let lastPayload = null;
+
+function deliver(p) {
+  $('btn-resend').classList.add('hidden');
+  setSync('📤 결과 전송 중… 완료 표시가 뜰 때까지 창을 닫지 마세요', '#b45309');
+  post(p).then(() => { delBox(p.id); setSync('✅ 전송 완료 — 이제 닫아도 됩니다', '#15803d'); })
+    .catch(() => { setSync('⚠️ 전송 실패 — 아래 버튼으로 다시 전송해 주세요', '#dc2626'); $('btn-resend').classList.remove('hidden'); });
+}
+const resend = () => lastPayload && deliver(lastPayload);
+
 function sendResult(r) {
   if (sent) return; sent = true;
   if (!urlOk()) { setSync('⚠️ 시트 연동 주소(SHEET_URL)가 아직 설정되지 않았습니다.', '#b45309'); return; }
   const cats = {}; answers.forEach(a => { const c = cats[a.cat] || (cats[a.cat] = { ok: 0, total: 0 }); c.total++; if (a.ok) c.ok++; });
-  const p = { key: SHEET_KEY, id: uid, name: srName, mode: quizMode === 'speed' ? `스피드(${SPEED_N}문항)` : '전체 완주', swipe: r.sOk, swipeTotal: r.sTot, quiz: correct, quizTotal: r.qTot, pct: r.pct, grade: r.title, sec: r.secs, points, bestStreak, device: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? '모바일' : 'PC', cats, answers };
-  setSync('📤 결과를 시트로 전송 중...', '#64748b');
-  post(p).then(() => setSync('✅ 결과 전송 완료 (시트에 잠시 후 반영됩니다)', '#15803d')).catch(() => { queueP(p); setSync('⚠️ 전송 실패 — 다음 접속 때 자동으로 다시 보냅니다.', '#b45309'); });
+  const types = {}; answers.forEach(a => { const n = (TYPES.find(t => t.id === a.t) || {}).name || a.t; const c = types[n] || (types[n] = { ok: 0, total: 0 }); c.total++; if (a.ok) c.ok++; });
+  const p = { key: SHEET_KEY, id: uid, name: srName, mode: quizMode === 'speed' ? `스피드(${SPEED_N}문항)` : '전체 완주', swipe: r.sOk, swipeTotal: r.sTot, quiz: correct, quizTotal: r.qTot, pct: r.pct, grade: r.title, sec: r.secs, points, bestStreak, device: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? '모바일' : 'PC', cats, types, answers };
+  lastPayload = p;
+  addBox(p);      // ① 먼저 기기에 보관 (창을 닫아도 다음 접속 때 자동 재전송)
+  deliver(p);     // ② 전송 → 성공하면 보관분 삭제
 }
-try { const q = JSON.parse(localStorage.getItem('smc_pending') || '[]'); if (q.length && urlOk()) { localStorage.removeItem('smc_pending'); q.forEach(p => post(p).catch(() => queueP(p))); } } catch (e) {}
+
+/* 창을 닫거나 앱을 전환하는 순간, 아직 확인 안 된 결과를 beacon으로 한 번 더 전송 */
+const flushBox = () => { if (urlOk()) getBox().forEach(beacon); };
+window.addEventListener('pagehide', flushBox);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushBox(); });
+
+/* 다음 접속 시 못 보낸 결과 자동 재전송 */
+if (urlOk()) getBox().forEach(p => post(p).then(() => delBox(p.id)).catch(() => {}));
 
 function downloadReport() {
   const txt = `================================================
